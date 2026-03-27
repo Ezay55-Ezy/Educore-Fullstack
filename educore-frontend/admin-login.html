@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore — Admin Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1a1a24;
+    --accent: #f59e0b;
+    --accent2: #ef4444;
+    --glow: rgba(245,158,11,0.2);
+    --ink: #fafafa;
+    --ink-soft: #9ca3af;
+    --ink-muted: #4b5563;
+    --border: rgba(255,255,255,0.06);
+    --radius: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .left-panel {
+    background: linear-gradient(135deg, #1a1a0a 0%, #0a0a0f 50%, #0f0a1a 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(239,68,68,0.04) 0%, transparent 50%);
+  }
+
+  .panel-content { position: relative; z-index: 1; }
+
+  .panel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+
+  .panel-title .highlight {
+    -webkit-text-stroke: 2px var(--accent);
+    color: transparent;
+  }
+
+  .panel-desc {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 380px;
+    font-weight: 300;
+    margin-bottom: 48px;
+  }
+
+  .feature-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .feature-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    box-shadow: 0 0 8px var(--glow);
+  }
+
+  .right-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    background: var(--bg);
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .login-header { margin-bottom: 36px; }
+
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .login-sub { font-size: 14px; color: var(--ink-soft); font-weight: 300; }
+
+  .form-group { margin-bottom: 18px; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px; color: var(--ink-muted);
+    pointer-events: none; transition: color 0.2s;
+  }
+
+  .input-wrap:focus-within .input-icon { color: var(--accent); }
+
+  input {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  input::placeholder { color: var(--ink-muted); }
+
+  input:focus {
+    border-color: var(--accent);
+    background: var(--surface2);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+  }
+
+  input.error { border-color: var(--accent2); }
+
+  .toggle-pass {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-muted); font-size: 15px; padding: 4px;
+  }
+
+  .error-banner {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fca5a5;
+    margin-bottom: 18px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .error-banner.show { display: flex; }
+
+  .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #000;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.25);
+    margin-top: 8px;
+  }
+
+  .btn-login:hover {
+    background: #fbbf24;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(245,158,11,0.35);
+  }
+
+  .btn-login:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .spinner {
+    display: none;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: black;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+
+  .btn-login.loading .btn-text { display: none; }
+  .btn-login.loading .spinner { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hint {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  .hint strong { color: var(--ink-soft); }
+
+  @media (max-width: 768px) {
+    body { grid-template-columns: 1fr; }
+    .left-panel { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="panel-content">
+    <div class="panel-badge">⚡ Administrator Access</div>
+    <div class="panel-title">
+      EDU<br>
+      <span class="highlight">CORE</span><br>
+      ADMIN
+    </div>
+    <div class="panel-desc">
+      Full control over your school management system. Register students, manage records, track fees and generate reports.
+    </div>
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-dot"></div>Register and manage all students</div>
+      <div class="feature-item"><div class="feature-dot"></div>View attendance and grade reports</div>
+      <div class="feature-item"><div class="feature-dot"></div>Track fee payments and balances</div>
+      <div class="feature-item"><div class="feature-dot"></div>Manage classes and teachers</div>
+      <div class="feature-item"><div class="feature-dot"></div>Export data and generate reports</div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="login-box">
+
+    <div class="login-header">
+      <div class="login-title">SIGN IN</div>
+      <div class="login-sub">Access the admin dashboard with your credentials</div>
+    </div>
+
+    <div class="error-banner" id="errorBanner">
+      <span>⚠️</span>
+      <span id="errorMsg">Invalid credentials.</span>
+    </div>
+
+    <div class="form-group">
+      <label>Email Address</label>
+      <div class="input-wrap">
+        <span class="input-icon">✉️</span>
+        <input type="text" id="emailInput" placeholder="admin at educore.com" oninput="clearError()">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="passwordInput" placeholder="Enter password" oninput="clearError()">
+        <button class="toggle-pass" id="toggleBtn" type="button">👁</button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="loginBtn" type="button">
+      <span class="btn-text">Access Dashboard →</span>
+      <div class="spinner"></div>
+    </button>
+
+    <div class="hint">
+      Enter your admin credentials to access the dashboard.
+      <br><br>
+      <a href="forgot-password.html?role=admin" style="color:var(--accent);text-decoration:none;">Forgot your password?</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+var API = CONFIG.API_BASE_URL;
+
+// Redirect if already logged in
+var savedToken = localStorage.getItem(CONFIG.STORAGE_KEYS.ADMIN_TOKEN);
+if (savedToken) {
+  window.location.href = CONFIG.ROUTES.ADMIN_DASHBOARD;
+}
+
+// Toggle password visibility
+document.getElementById('toggleBtn').addEventListener('click', function() {
+  var input = document.getElementById('passwordInput');
+  if (input.type === 'password') {
+    input.type = 'text';
+    this.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    this.textContent = '👁';
+  }
+});
+
+// Login on Enter key
+document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+document.getElementById('emailInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+// Clear errors on input
+function clearError() {
+  document.getElementById('errorBanner').classList.remove('show');
+  document.getElementById('emailInput').classList.remove('error');
+  document.getElementById('passwordInput').classList.remove('error');
+}
+
+// Show error
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBanner').classList.add('show');
+  document.getElementById('emailInput').classList.add('error');
+  document.getElementById('passwordInput').classList.add('error');
+}
+
+// Login button click
+document.getElementById('loginBtn').addEventListener('click', function() {
+  doLogin();
+});
+
+// Main login function
+function doLogin() {
+  var email    = document.getElementById('emailInput').value.trim();
+  var password = document.getElementById('passwordInput').value;
+  var btn      = document.getElementById('loginBtn');
+
+  console.log('Login attempt:', email);
+
+  if (!email)    { showError('Please enter your email.'); return; }
+  if (!password) { showError('Please enter your password.'); return; }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  fetch(API + '/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ admission_no: email, password: password })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    console.log('Response:', data);
+
+    if (data.success && data.user && data.user.role === 'admin') {
+      localStorage.setItem(CONFIG.STORAGE_KEYS.ADMIN_TOKEN, data.token);
+      localStorage.setItem(CONFIG.STORAGE_KEYS.ADMIN_USER, JSON.stringify(data.user));
+      window.location.href = CONFIG.ROUTES.ADMIN_DASHBOARD;
+    } else if (data.success && data.user && data.user.role !== 'admin') {
+      showError('Access denied. Admin accounts only.');
+    } else {
+      showError(data.message || 'Login failed. Check your credentials.');
+    }
+  })
+  .catch(function(err) {
+    console.error('Error:', err);
+    showError(CONFIG.ERRORS.CONNECTION_FAILED);
+  })
+  .finally(function() {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  });
+}
+</script>
+
+</body>
+</html>

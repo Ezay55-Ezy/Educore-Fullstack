@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore — My Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<style>
+  :root {
+    --bg: #060910;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --surface3: #1c2333;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --purple: #8b5cf6;
+    --ink: #f0f6ff;
+    --ink-soft: #8b9bb4;
+    --ink-muted: #4a5568;
+    --border: rgba(255,255,255,0.07);
+    --glow: rgba(59,130,246,0.15);
+    --radius: 16px;
+    --sidebar-w: 250px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg-grid {
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed; left: 0; top: 0;
+    z-index: 100;
+    display: flex; flex-direction: column;
+    padding: 28px 16px;
+  }
+
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px 32px;
+  }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 18px;
+    box-shadow: 0 0 16px var(--glow);
+  }
+
+  .logo-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700;
+    background: linear-gradient(135deg, #fff, #8b9bb4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-section-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); padding: 0 12px;
+    margin-bottom: 6px; margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    color: var(--ink-soft); cursor: pointer;
+    transition: all 0.15s; margin-bottom: 2px;
+    font-size: 14px; font-weight: 400;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--ink); }
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(6,182,212,0.10));
+    color: var(--accent);
+    border: 1px solid rgba(59,130,246,0.15);
+    font-weight: 500;
+  }
+
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    background: var(--surface2);
+  }
+
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: grid; place-items: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 13px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--ink-muted); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1; min-height: 100vh;
+    position: relative; z-index: 1;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    height: 64px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 32px; gap: 16px;
+    background: rgba(6,9,16,0.8);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 50;
+  }
+
+  .topbar-title { font-size: 15px; font-weight: 500; color: var(--ink-soft); }
+  .topbar-title span { color: var(--ink); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+  .btn-logout {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px;
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+    color: #fca5a5; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+  /* ── PAGE ── */
+  .page { padding: 32px; display: none; }
+  .page.active { display: block; }
+
+  /* ── WELCOME BANNER ── */
+  .welcome-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(6,182,212,0.08));
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 24px;
+    position: relative; overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .welcome-banner::before {
+    content: '';
+    position: absolute; right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .welcome-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: grid; place-items: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; font-weight: 700; color: white;
+    flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(59,130,246,0.3);
+  }
+
+  .welcome-text { flex: 1; }
+  .welcome-greeting { font-size: 13px; color: var(--ink-soft); font-weight: 300; }
+  .welcome-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 800;
+    background: linear-gradient(135deg, #fff, #8b9bb4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 2px;
+  }
+  .welcome-meta { font-size: 13px; color: var(--ink-muted); margin-top: 6px; }
+  .welcome-meta span { color: var(--accent); font-weight: 500; }
+
+  /* ── STATS GRID ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    animation: fadeUp 0.4s ease both;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .stat-card:nth-child(2) { animation-delay: 0.05s; }
+  .stat-card:nth-child(3) { animation-delay: 0.10s; }
+  .stat-card:nth-child(4) { animation-delay: 0.15s; }
+
+  .stat-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: grid; place-items: center; font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700;
+  }
+
+  .stat-label { font-size: 12px; color: var(--ink-muted); margin-top: 3px; }
+  .stat-sub { font-size: 11px; margin-top: 6px; font-weight: 500; }
+
+  /* ── CONTENT GRID ── */
+  .content-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+  }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--ink-soft); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; transition: all 0.2s;
+  }
+  .theme-toggle-btn:hover { background: var(--surface3); color: var(--ink); transform: scale(1.05); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700;
+  }
+
+  .card-subtitle { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .card-body { padding: 22px; }
+
+  /* ── INFO TABLE ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .info-item { display: flex; flex-direction: column; gap: 4px; }
+  .info-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); }
+  .info-value { font-size: 14px; font-weight: 500; color: var(--ink); }
+
+  /* ── ATTENDANCE BARS ── */
+  .attendance-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .att-row {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px;
+  }
+
+  .att-date { color: var(--ink-muted); width: 90px; flex-shrink: 0; font-size: 12px; }
+  .att-bar-wrap { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .att-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .att-status { width: 64px; text-align: right; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+
+  .status-present .att-bar { background: var(--green); width: 100%; }
+  .status-absent  .att-bar { background: var(--red);   width: 100%; }
+  .status-late    .att-bar { background: var(--amber);  width: 60%; }
+
+  .status-present .att-status { color: var(--green); }
+  .status-absent  .att-status { color: var(--red); }
+  .status-late    .att-status { color: var(--amber); }
+
+  /* ── GRADES TABLE ── */
+  .grades-table { width: 100%; border-collapse: collapse; }
+  .grades-table th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-muted); background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .grades-table td {
+    padding: 12px 14px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .grades-table tr:last-child td { border-bottom: none; }
+  .grades-table tbody tr { transition: background 0.1s; }
+  .grades-table tbody tr:hover { background: var(--surface2); }
+
+  .grade-pill {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+  }
+  .grade-A  { background: rgba(16,185,129,0.15); color: #34d399; }
+  .grade-B  { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .grade-C  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .grade-D  { background: rgba(239,68,68,0.15);  color: #f87171; }
+
+  /* ── FEE SUMMARY ── */
+  .fee-summary {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .fee-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .fee-label { color: var(--ink-soft); }
+  .fee-amount { font-weight: 600; font-size: 15px; }
+  .fee-amount.green { color: var(--green); }
+  .fee-amount.red   { color: var(--red); }
+  .fee-amount.amber { color: var(--amber); }
+
+  .fee-progress-wrap {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .fee-progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--ink-muted);
+    margin-bottom: 10px;
+  }
+
+  .progress-track {
+    height: 8px; background: var(--surface3);
+    border-radius: 4px; overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 1s ease;
+  }
+
+  /* ── LOADING SKELETON ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+  }
+
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .badge-blue  { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .badge-red   { background: rgba(239,68,68,0.15);  color: #f87171; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) { .content-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px)  { .stats-grid { grid-template-columns: 1fr 1fr; } }
+  .hamburger {
+    display: none;
+    flex-direction: column; gap: 5px;
+    cursor: pointer; padding: 8px;
+    background: none; border: none; z-index: 300;
+  }
+  .hamburger span {
+    display: block; width: 22px; height: 2px;
+    background: var(--ink); border-radius: 2px;
+    transition: all 0.3s;
+  }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 99;
+  }
+  .sidebar-overlay.show { display: block; }
+
+  @media (max-width: 700px)  {
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 200;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .hamburger { display: flex; }
+    .page { padding: 16px; }
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="bg-grid"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-name">EduCore</div>
+  </div>
+
+  <div class="nav-section-label">My Portal</div>
+  <button class="nav-item active" onclick="showPage('overview', this)">
+    <span class="nav-icon">🏠</span> Overview
+  </button>
+  <button class="nav-item" onclick="showPage('profile', this)">
+    <span class="nav-icon">👤</span> My Profile
+  </button>
+  <button class="nav-item" onclick="showPage('attendance', this)">
+    <span class="nav-icon">📅</span> Attendance
+  </button>
+  <button class="nav-item" onclick="showPage('grades', this)">
+    <span class="nav-icon">📊</span> Grades
+  </button>
+  <button class="nav-item" onclick="showPage('fees', this)">
+    <span class="nav-icon">💰</span> Fee Statement
+  </button>
+
+  <div class="nav-section-label" style="margin-top:16px;">More</div>
+  <a class="nav-item" href="announcements.html" style="text-decoration:none;">
+    <span class="nav-icon">📢</span> Announcements
+  </a>
+  <a class="nav-item" href="report-card.html" style="text-decoration:none;">
+    <span class="nav-icon">📄</span> Report Card
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="user-avatar" id="sidebarAvatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Loading…</div>
+        <div class="user-role">Student</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main" id="main-content" role="main">
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-title">EduCore &nbsp;›&nbsp; <span id="pageTitle">Overview</span></div>
+    <div class="topbar-right">
+      <button class="theme-toggle-btn theme-toggle" onclick="ThemeManager.toggle()" title="Toggle Dark/Light Mode">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon" style="display:none;">🌙</span>
+      </button>
+      <div id="notificationBell">
+        <button class="notification-bell" onclick="NotificationManager.togglePanel()" aria-label="Notifications">
+          🔔
+          <span class="notification-badge" id="notificationBadge">0</span>
+        </button>
+      </div>
+      <a href="profile.html" class="btn-logout" style="text-decoration:none;background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.2);color:#93c5fd;">👤 Profile</a>
+      <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </div>
+
+  <!-- ══ OVERVIEW PAGE ══ -->
+  <div class="page active" id="page-overview">
+    <div class="welcome-banner">
+      <div class="welcome-avatar" id="welcomeAvatar">?</div>
+      <div class="welcome-text">
+        <div class="welcome-greeting">Good day 👋</div>
+        <div class="welcome-name" id="welcomeName">Loading…</div>
+        <div class="welcome-meta" id="welcomeMeta">Loading class info…</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(59,130,246,0.12);">📅</div>
+        <div class="stat-value" id="statAttendance">—</div>
+        <div class="stat-label">Attendance Rate</div>
+        <div class="stat-sub" style="color:var(--green);" id="statAttDays">Loading…</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.12);">📊</div>
+        <div class="stat-value" id="statAverage">—</div>
+        <div class="stat-label">Average Score</div>
+        <div class="stat-sub" style="color:var(--accent);" id="statSubjects">Loading…</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.12);">💰</div>
+        <div class="stat-value" id="statBalance">—</div>
+        <div class="stat-label">Fee Balance</div>
+        <div class="stat-sub" id="statFeeStatus">Loading…</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(139,92,246,0.12);">🏫</div>
+        <div class="stat-value" id="statClass">—</div>
+        <div class="stat-label">Current Class</div>
+        <div class="stat-sub" style="color:var(--ink-muted);" id="statAdm">Loading…</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Recent Attendance -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Recent Attendance</div>
+            <div class="card-subtitle">Last 10 school days</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="attendance-list" id="overviewAttendance">
+            <div class="skeleton" style="height:28px;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:28px;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:28px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Grades -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Grades</div>
+        </div>
+        <div class="card-body">
+          <div id="overviewGrades">
+            <div class="skeleton" style="height:28px;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:28px;margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:28px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE PAGE ══ -->
+  <div class="page" id="page-profile">
+    <div class="card" style="max-width:700px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Personal Information</div>
+          <div class="card-subtitle">Your registered details</div>
+        </div>
+        <span class="badge badge-green" id="profileStatus">Active</span>
+      </div>
+      <div class="card-body">
+        <div class="info-grid" id="profileGrid">
+          <div class="info-item"><div class="skeleton" style="height:40px;"></div></div>
+          <div class="info-item"><div class="skeleton" style="height:40px;"></div></div>
+          <div class="info-item"><div class="skeleton" style="height:40px;"></div></div>
+          <div class="info-item"><div class="skeleton" style="height:40px;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parent Info -->
+    <div class="card" style="max-width:700px;margin-top:20px;">
+      <div class="card-header">
+        <div class="card-title">Parent / Guardian</div>
+      </div>
+      <div class="card-body">
+        <div class="info-grid" id="parentGrid">
+          <div class="info-item"><div class="skeleton" style="height:40px;"></div></div>
+          <div class="info-item"><div class="skeleton" style="height:40px;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ATTENDANCE PAGE ══ -->
+  <div class="page" id="page-attendance">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Attendance Record</div>
+          <div class="card-subtitle" id="attSummaryText">Loading summary…</div>
+        </div>
+        <span class="badge badge-green" id="attRateBadge">—</span>
+      </div>
+      <div class="card-body">
+        <div class="attendance-list" id="fullAttendanceList">
+          <div class="skeleton" style="height:28px;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:28px;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:28px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ GRADES PAGE ══ -->
+  <div class="page" id="page-grades">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Academic Results</div>
+          <div class="card-subtitle">Term 1, 2024</div>
+        </div>
+        <span class="badge badge-blue" id="gradeAvgBadge">Avg: —</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="grades-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Score</th>
+              <th>Grade</th>
+              <th>Term</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="gradesTableBody">
+            <tr><td colspan="5" style="padding:32px;text-align:center;color:var(--ink-muted);">
+              <div class="skeleton" style="height:20px;margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:20px;"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FEES PAGE ══ -->
+  <div class="page" id="page-fees">
+    <div class="content-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Fee Statement</div>
+        </div>
+        <div class="card-body">
+          <div class="fee-summary" id="feeSummary">
+            <div class="skeleton" style="height:52px;"></div>
+            <div class="skeleton" style="height:52px;"></div>
+            <div class="skeleton" style="height:52px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Payment History</div>
+        </div>
+        <div class="card-body" id="paymentHistory">
+          <div class="skeleton" style="height:40px;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:40px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<script src="config.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/notifications.js"></script>
+<script>
+  const API = CONFIG.API_BASE_URL;
+
+  // ── AUTH CHECK ──────────────────────────────────────────
+  const token = localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN);
+  const user  = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_USER) || '{}');
+
+  if (!token || !user.id) {
+    window.location.href = CONFIG.ROUTES.STUDENT_LOGIN;
+  }
+
+  const studentId = user.id;
+
+  // ── INITIALIZATION ──────────────────────────────────────
+  ThemeManager.init();
+  NotificationManager.init({
+    userType: 'student',
+    apiUrl: API,
+    token: token
+  });
+
+  // ── STORAGE LISTENER (REACTIVE UPDATES) ──────────────────
+  window.addEventListener('storage', (e) => {
+    if (e.key === CONFIG.STORAGE_KEYS.STUDENT_USER) {
+      const updatedUser = JSON.parse(e.newValue);
+      if (updatedUser) {
+        // Refresh student data from API to ensure consistency
+        loadAll();
+      }
+    }
+  });
+
+  function authHeaders() {
+    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+  }
+
+  function initials(name) {
+    return CONFIG.getInitials(name);
+  }
+
+  function formatDate(d) {
+    return CONFIG.formatDate(d);
+  }
+
+  function formatMoney(n) {
+    return CONFIG.formatMoney(n);
+  }
+
+  function gradeClass(g) {
+    return CONFIG.getGradeClass(g);
+  }
+
+  // ── LOAD ALL DATA ───────────────────────────────────────
+  async function loadAll() {
+    try {
+      const year = new Date().getFullYear();
+      const term = 'Term 1';
+
+      const [studentRes, attRes, reportRes, feesRes] = await Promise.all([
+        fetch(`${API}/students/${studentId}`,            { headers: authHeaders() }),
+        fetch(`${API}/students/${studentId}/attendance`, { headers: authHeaders() }),
+        fetch(`${API}/report-cards?student_id=${studentId}&term=${term}&year=${year}`, { headers: authHeaders() }),
+        fetch(`${API}/students/${studentId}/fees`,       { headers: authHeaders() }),
+      ]);
+
+      const student  = await studentRes.json();
+      const att      = await attRes.json();
+      const report   = await reportRes.json();
+      const fees     = await feesRes.json();
+
+      if (student.success)  renderStudent(student.student);
+      if (att.success)      renderAttendance(att);
+      if (report.success)   renderGrades(report);
+      if (fees.success)     renderFees(fees);
+
+    } catch (err) {
+      console.error('Load error:', err);
+      showOfflineMode();
+    }
+  }
+
+  // ── RENDER STUDENT ──────────────────────────────────────
+  function renderStudent(s) {
+    const name = s.full_name || `${s.first_name} ${s.last_name}`;
+    const ini  = initials(name);
+
+    // Sidebar
+    document.getElementById('sidebarAvatar').textContent = ini;
+    document.getElementById('sidebarName').textContent   = name;
+
+    // Welcome banner
+    document.getElementById('welcomeAvatar').textContent = ini;
+    document.getElementById('welcomeName').textContent   = name;
+    document.getElementById('welcomeMeta').innerHTML =
+      `<span>${s.grade_name || 'N/A'}</span> &nbsp;·&nbsp; Adm: <span>${s.assessment_number || s.admission_no}</span>`;
+
+    // Stat card
+    document.getElementById('statClass').textContent = s.grade ? `Grade ${s.grade}` : s.grade_name || '—';
+    document.getElementById('statAdm').textContent   = s.assessment_number || s.admission_no;
+
+    // Profile page
+    document.getElementById('profileStatus').textContent = s.status || 'Active';
+    document.getElementById('profileGrid').innerHTML = `
+      <div class="info-item">
+        <div class="info-label">Full Name</div>
+        <div class="info-value">${name}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Assessment Number</div>
+        <div class="info-value">${s.assessment_number || '—'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Admission No</div>
+        <div class="info-value">${s.admission_no}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Date of Birth</div>
+        <div class="info-value">${formatDate(s.date_of_birth)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Gender</div>
+        <div class="info-value">${s.gender || '—'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Grade & Stream</div>
+        <div class="info-value">${s.grade_name || '—'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Blood Group</div>
+        <div class="info-value">${s.blood_group || '—'}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Admission Date</div>
+        <div class="info-value">${formatDate(s.admission_date)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">KCPE Score</div>
+        <div class="info-value">${s.kcpe_score ? s.kcpe_score + ' / 500' : '—'}</div>
+      </div>
+      <div class="info-item" style="grid-column:span 2">
+        <div class="info-label">Home Address</div>
+        <div class="info-value">${s.address || '—'}</div>
+      </div>
+    `;
+
+    // Parent info
+    if (s.parents && s.parents.length > 0) {
+      const p = s.parents[0];
+      document.getElementById('parentGrid').innerHTML = `
+        <div class="info-item">
+          <div class="info-label">Guardian Name</div>
+          <div class="info-value">${p.full_name}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Relationship</div>
+          <div class="info-value">${p.relationship || '—'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Phone</div>
+          <div class="info-value">${p.phone_primary}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Email</div>
+          <div class="info-value">${p.email || '—'}</div>
+        </div>
+      `;
+    }
+  }
+
+  // ── RENDER ATTENDANCE ───────────────────────────────────
+  function renderAttendance(data) {
+    const { summary, records } = data;
+
+    document.getElementById('statAttendance').textContent = summary.attendance_rate;
+    document.getElementById('statAttDays').textContent    = `${summary.present} present / ${summary.total} days`;
+
+    // Attendance badge color
+    const rate = parseInt(summary.attendance_rate);
+    const attBadge = document.getElementById('attRateBadge');
+    attBadge.textContent = summary.attendance_rate;
+    attBadge.className = `badge ${rate >= 80 ? 'badge-green' : rate >= 60 ? 'badge-amber' : 'badge-red'}`;
+    document.getElementById('attSummaryText').textContent =
+      `${summary.present} Present · ${summary.absent} Absent · ${summary.late} Late`;
+
+    function attHTML(records, limit) {
+      return records.slice(0, limit).map(r => `
+        <div class="att-row status-${r.status.toLowerCase()}">
+          <div class="att-date">${formatDate(r.date)}</div>
+          <div class="att-bar-wrap"><div class="att-bar"></div></div>
+          <div class="att-status">${r.status}</div>
+        </div>
+      `).join('') || '<div style="color:var(--ink-muted);font-size:13px;">No records found.</div>';
+    }
+
+    document.getElementById('overviewAttendance').innerHTML  = attHTML(records, 8);
+    document.getElementById('fullAttendanceList').innerHTML  = attHTML(records, 30);
+  }
+
+  // ── RENDER GRADES ───────────────────────────────────────
+  function renderGrades(data) {
+    const { summary, assessments } = data.reportCard;
+    const avg = summary.average_performance_level;
+
+    document.getElementById('statAverage').textContent  = avg ? `Level ${avg}` : '—';
+    document.getElementById('statSubjects').textContent = `${assessments.length} Learning Areas`;
+    document.getElementById('gradeAvgBadge').textContent = `Avg: ${avg || '—'}/4`;
+
+    // Overview grades (small list)
+    document.getElementById('overviewGrades').innerHTML = assessments.slice(0, 5).map(a => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:13px;">${a.learning_area_name}: ${a.sub_strand_name}</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:13px;color:var(--ink-soft);">Level ${a.performance_level}</span>
+          <span class="grade-pill ${gradeClass(a.level)}">${a.level}</span>
+        </div>
+      </div>
+    `).join('') || '<div style="color:var(--ink-muted);font-size:13px;">No assessments yet.</div>';
+
+    // Full grades table
+    document.getElementById('gradesTableBody').innerHTML = assessments.map(a => `
+      <tr>
+        <td style="font-weight:500;">${a.learning_area_name}: ${a.sub_strand_name}</td>
+        <td>Level ${a.performance_level}/4</td>
+        <td><span class="grade-pill ${gradeClass(a.level)}">${a.level || '—'}</span></td>
+        <td style="color:var(--ink-muted);">${a.term} ${a.year}</td>
+        <td style="color:var(--ink-muted);font-size:12px;">${a.teacher_comments || '—'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--ink-muted);">No assessments found.</td></tr>';
+  }
+
+  // ── RENDER FEES ───────────────────────���─────────────────
+  function renderFees(data) {
+    const { summary, payments } = data;
+
+    const balanceColor = summary.balance <= 0 ? 'green' : summary.balance < summary.total_required ? 'amber' : 'red';
+    const pctPaid = Math.min(100, Math.round((summary.total_paid / summary.total_required) * 100));
+
+    document.getElementById('statBalance').textContent  = formatMoney(summary.balance);
+    const feeSubEl = document.getElementById('statFeeStatus');
+    feeSubEl.textContent  = summary.status;
+    feeSubEl.style.color  = summary.status === 'Paid' ? 'var(--green)' : summary.status === 'Partial' ? 'var(--amber)' : 'var(--red)';
+
+    document.getElementById('feeSummary').innerHTML = `
+      <div class="fee-row">
+        <span class="fee-label">Total Required</span>
+        <span class="fee-amount">${formatMoney(summary.total_required)}</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">Amount Paid</span>
+        <span class="fee-amount green">${formatMoney(summary.total_paid)}</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">Balance</span>
+        <span class="fee-amount ${balanceColor}">${formatMoney(summary.balance)}</span>
+      </div>
+      <div class="fee-progress-wrap">
+        <div class="fee-progress-label">
+          <span>Payment Progress</span>
+          <span>${pctPaid}% paid</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pctPaid}%"></div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('paymentHistory').innerHTML = payments.length > 0
+      ? payments.map(p => `
+        <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:500;">${formatMoney(p.amount_paid)}</div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:2px;">${p.payment_method} · ${formatDate(p.payment_date)}</div>
+          </div>
+          <span class="badge badge-green">${p.term || 'Term 1'}</span>
+        </div>
+      `).join('')
+      : '<div style="color:var(--ink-muted);font-size:13px;">No payments recorded yet.</div>';
+  }
+
+  // ── OFFLINE MODE (if backend is down) ──────────────────
+  function showOfflineMode() {
+    document.getElementById('welcomeName').textContent = user.name || 'Student';
+    document.getElementById('sidebarName').textContent = user.name || 'Student';
+    document.getElementById('welcomeAvatar').textContent = initials(user.name);
+    document.getElementById('sidebarAvatar').textContent = initials(user.name);
+    document.getElementById('welcomeMeta').textContent = 'Could not load data — check backend connection';
+    ['statAttendance','statAverage','statBalance','statClass'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+  }
+
+  // ── PAGE NAVIGATION ─────────────────────────────────────
+  const pageTitles = {
+    overview: 'Overview', profile: 'My Profile',
+    attendance: 'Attendance', grades: 'Grades', fees: 'Fee Statement'
+  };
+
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('pageTitle').textContent = pageTitles[name] || name;
+  }
+
+  // ── HAMBURGER ──
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  }
+  function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => { if (window.innerWidth <= 700) closeSidebar(); });
+  });
+
+  // ── LOGOUT ──────────────────────────────────────────────
+  function logout() {
+    localStorage.removeItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN);
+    localStorage.removeItem(CONFIG.STORAGE_KEYS.STUDENT_USER);
+    window.location.href = CONFIG.ROUTES.STUDENT_LOGIN;
+  }
+
+  // ── INIT ────────────────────────────────────────────────
+  loadAll();
+</script>
+
+<script src="js/session-manager.js"></script>
+<script src="js/utils.js"></script>
+<script>
+  // Initialize session manager for student
+  SessionManager.init({
+    tokenKey: CONFIG.STORAGE_KEYS.STUDENT_TOKEN,
+    loginUrl: CONFIG.ROUTES.STUDENT_LOGIN,
+    timeout: 30 * 60 * 1000, // 30 minutes
+    warningTime: 5 * 60 * 1000 // 5 minutes warning
+  });
+</script>
+
+<!-- Session Warning Modal -->
+<div class="session-warning-overlay" id="sessionWarning">
+  <div class="session-warning-modal">
+    <h3>Session Expiring</h3>
+    <p>Your session will expire due to inactivity.</p>
+    <div class="countdown" id="sessionCountdown">5:00</div>
+    <div class="btn-row">
+      <button class="btn-stay" onclick="SessionManager.extendSession()">Stay Logged In</button>
+      <button class="btn-logout" onclick="logout()">Sign Out Now</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

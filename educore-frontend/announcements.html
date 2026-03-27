@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements | EduCore</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary, #0f172a);
+      color: var(--text-primary, #f8fafc);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      background: var(--card-bg, #1e293b);
+      border-bottom: 1px solid var(--border-color, #334155);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--hover-bg, #334155);
+      border: none;
+      color: var(--text-secondary, #94a3b8);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .back-btn:hover {
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .create-btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .create-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Main */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 20px;
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .filter-btn:hover {
+      background: var(--hover-bg, #334155);
+    }
+    
+    .filter-btn.active {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+    
+    .filter-btn .badge {
+      background: var(--bg-tertiary, #334155);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      margin-left: 6px;
+    }
+    
+    .filter-btn.active .badge {
+      background: rgba(59, 130, 246, 0.2);
+    }
+    
+    /* Announcements List */
+    .announcements-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .announcement-card {
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    
+    .announcement-card:hover {
+      border-color: var(--border-light, #475569);
+    }
+    
+    .announcement-card.pinned {
+      border-color: #f59e0b;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), transparent);
+    }
+    
+    .announcement-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 24px;
+      gap: 16px;
+    }
+    
+    .announcement-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .announcement-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .announcement-icon.general {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+    
+    .announcement-icon.urgent {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+    
+    .announcement-icon.event {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+    
+    .announcement-icon.academic {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+    
+    .announcement-info h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .pin-badge {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .announcement-date {
+      color: var(--text-muted, #64748b);
+      font-size: 0.85rem;
+    }
+    
+    .announcement-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .tag.urgent {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+    
+    .tag.general {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+    
+    .tag.event {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+    
+    .tag.academic {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+    
+    .announcement-body {
+      padding: 0 24px 20px;
+    }
+    
+    .announcement-content {
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    
+    .announcement-content.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .read-more {
+      background: none;
+      border: none;
+      color: #3b82f6;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 8px;
+      padding: 0;
+    }
+    
+    .read-more:hover {
+      text-decoration: underline;
+    }
+    
+    .announcement-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color, #334155);
+      background: var(--bg-tertiary, rgba(51, 65, 85, 0.3));
+    }
+    
+    .posted-by {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.85rem;
+    }
+    
+    .posted-by-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .attachment-count {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted, #64748b);
+      font-size: 0.85rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--bg-tertiary, #334155);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: var(--text-muted, #64748b);
+    }
+    
+    .empty-state h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.95rem;
+    }
+    
+    /* Create Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color, #334155);
+    }
+    
+    .modal-header h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary, #94a3b8);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .modal-close:hover {
+      background: var(--hover-bg, #334155);
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--input-bg, #0f172a);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 10px;
+      color: var(--text-primary, #f8fafc);
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    .form-group textarea {
+      min-height: 150px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #3b82f6;
+    }
+    
+    .checkbox-group label {
+      margin: 0;
+      cursor: pointer;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid var(--border-color, #334155);
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color, #334155);
+      color: var(--text-secondary, #94a3b8);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--hover-bg, #334155);
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-tertiary, #334155) 25%, var(--card-bg, #1e293b) 50%, var(--bg-tertiary, #334155) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .announcement-header {
+        flex-direction: column;
+      }
+      
+      .announcement-tags {
+        margin-top: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" onclick="goBack()" aria-label="Go back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+      <h1>Announcements</h1>
+    </div>
+    <button class="create-btn" id="createBtn" onclick="openCreateModal()" style="display: none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>New Announcement</span>
+    </button>
+  </header>
+  
+  <main class="main">
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all" onclick="filterAnnouncements('all')">
+        All <span class="badge" id="countAll">0</span>
+      </button>
+      <button class="filter-btn" data-filter="urgent" onclick="filterAnnouncements('urgent')">
+        Urgent <span class="badge" id="countUrgent">0</span>
+      </button>
+      <button class="filter-btn" data-filter="academic" onclick="filterAnnouncements('academic')">
+        Academic <span class="badge" id="countAcademic">0</span>
+      </button>
+      <button class="filter-btn" data-filter="event" onclick="filterAnnouncements('event')">
+        Events <span class="badge" id="countEvent">0</span>
+      </button>
+      <button class="filter-btn" data-filter="general" onclick="filterAnnouncements('general')">
+        General <span class="badge" id="countGeneral">0</span>
+      </button>
+    </div>
+    
+    <div class="announcements-list" id="announcementsList">
+      <!-- Loading skeletons -->
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <div class="announcement-meta">
+            <div class="skeleton" style="width: 44px; height: 44px; border-radius: 12px;"></div>
+            <div>
+              <div class="skeleton" style="width: 200px; height: 20px; margin-bottom: 8px;"></div>
+              <div class="skeleton" style="width: 120px; height: 14px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="announcement-body">
+          <div class="skeleton" style="width: 100%; height: 60px;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Create Modal -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Create Announcement</h2>
+        <button type="button" class="modal-close" onclick="closeCreateModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <form id="createForm" onsubmit="createAnnouncement(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" placeholder="Enter announcement title" required>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="category">Category</label>
+              <select id="category" required>
+                <option value="general">General</option>
+                <option value="urgent">Urgent</option>
+                <option value="academic">Academic</option>
+                <option value="event">Event</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="audience">Target Audience</label>
+              <select id="audience" required>
+                <option value="all">Everyone</option>
+                <option value="students">Students Only</option>
+                <option value="teachers">Teachers Only</option>
+                <option value="parents">Parents Only</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="content">Content</label>
+            <textarea id="content" placeholder="Write your announcement content here..." required></textarea>
+          </div>
+          
+          <div class="checkbox-group">
+            <input type="checkbox" id="pinned">
+            <label for="pinned">Pin this announcement to top</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span>Publish</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script src="config.js"></script>
+  <script src="js/theme-manager.js"></script>
+  <script>
+    var API = CONFIG.API_BASE_URL;
+    var userRole = '';
+    var token = '';
+    var user = {};
+    var announcements = [];
+    var currentFilter = 'all';
+    
+    // Detect role and auth
+    function detectRole() {
+      if (localStorage.getItem(CONFIG.STORAGE_KEYS.ADMIN_TOKEN)) {
+        userRole = 'admin';
+        token = localStorage.getItem(CONFIG.STORAGE_KEYS.ADMIN_TOKEN);
+        user = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.ADMIN_USER) || '{}');
+      } else if (localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_TOKEN)) {
+        userRole = 'teacher';
+        token = localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_TOKEN);
+        user = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_USER) || '{}');
+      } else if (localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN)) {
+        userRole = 'student';
+        token = localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN);
+        user = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_USER) || '{}');
+      } else {
+        window.location.href = 'index.html';
+        return false;
+      }
+      
+    // Show create button for admin only
+    if (userRole === 'admin') {
+      document.getElementById('createBtn').style.display = 'flex';
+    }
+      
+      return true;
+    }
+    
+    function init() {
+      if (!detectRole()) return;
+      loadAnnouncements();
+    }
+    
+    function loadAnnouncements() {
+      fetch(API + '/announcements', {
+        headers: CONFIG.getAuthHeaders(token)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          announcements = data.announcements || [];
+        } else {
+          // Use sample data if API doesn't exist
+          announcements = getSampleAnnouncements();
+        }
+        updateCounts();
+        renderAnnouncements();
+      })
+      .catch(function(err) {
+        console.warn('Could not fetch announcements, using sample data');
+        announcements = getSampleAnnouncements();
+        updateCounts();
+        renderAnnouncements();
+      });
+    }
+    
+    function getSampleAnnouncements() {
+      return [
+        {
+          id: '1',
+          title: 'Term 2 Examinations Schedule Released',
+          content: 'The examination schedule for Term 2 has been released. All students are advised to check the timetable and prepare accordingly. Examinations will begin on April 15th and conclude on April 28th. Please ensure you have all necessary materials ready.',
+          category: 'academic',
+          pinned: true,
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          author: { name: 'Admin Office', role: 'admin' }
+        },
+        {
+          id: '2',
+          title: 'Important: School Fees Payment Deadline',
+          content: 'This is a reminder that the deadline for Term 2 school fees payment is March 31st. Please ensure all payments are made before this date to avoid any disruption to your studies.',
+          category: 'urgent',
+          pinned: true,
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          author: { name: 'Finance Department', role: 'admin' }
+        },
+        {
+          id: '3',
+          title: 'Annual Sports Day 2024',
+          content: 'We are excited to announce our Annual Sports Day will be held on April 5th. All students are encouraged to participate. Registration for various events is now open. See your class teacher for more details.',
+          category: 'event',
+          pinned: false,
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          author: { name: 'Sports Department', role: 'teacher' }
+        },
+        {
+          id: '4',
+          title: 'Library Hours Extended',
+          content: 'The school library will now be open from 7:00 AM to 6:00 PM on weekdays to accommodate students preparing for examinations. Weekend hours remain 9:00 AM to 4:00 PM.',
+          category: 'general',
+          pinned: false,
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          author: { name: 'Library Services', role: 'admin' }
+        }
+      ];
+    }
+    
+    function updateCounts() {
+      var counts = { all: announcements.length, urgent: 0, academic: 0, event: 0, general: 0 };
+      
+      announcements.forEach(function(a) {
+        if (counts[a.category] !== undefined) {
+          counts[a.category]++;
+        }
+      });
+      
+      document.getElementById('countAll').textContent = counts.all;
+      document.getElementById('countUrgent').textContent = counts.urgent;
+      document.getElementById('countAcademic').textContent = counts.academic;
+      document.getElementById('countEvent').textContent = counts.event;
+      document.getElementById('countGeneral').textContent = counts.general;
+    }
+    
+    function filterAnnouncements(filter) {
+      currentFilter = filter;
+      
+      document.querySelectorAll('.filter-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      
+      renderAnnouncements();
+    }
+    
+    function renderAnnouncements() {
+      var list = document.getElementById('announcementsList');
+      
+      var filtered = announcements;
+      if (currentFilter !== 'all') {
+        filtered = announcements.filter(function(a) { return a.category === currentFilter; });
+      }
+      
+      // Sort: pinned first, then by date
+      filtered.sort(function(a, b) {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 11l18-5v12L3 13v-2z"></path>
+                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path>
+              </svg>
+            </div>
+            <h3>No Announcements</h3>
+            <p>There are no announcements in this category yet.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = filtered.map(function(a) {
+        var icons = {
+          general: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 13v-2z"></path></svg>',
+          urgent: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+          event: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>',
+          academic: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>'
+        };
+        
+        var dateStr = CONFIG.formatDate(a.createdAt);
+        var authorInitials = CONFIG.getInitials(a.author ? a.author.name : 'Admin');
+        
+        var adminActions = '';
+        if (userRole === 'admin') {
+          adminActions = `
+            <div class="admin-actions" style="display:flex; gap:8px;">
+              <button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="openEditModal('${a.id}')">✏️ Edit</button>
+              <button class="btn btn-secondary" style="padding:4px 8px; font-size:12px; color:#ef4444; border-color:rgba(239,68,68,0.2);" onclick="deleteAnnouncement('${a.id}')">🗑 Delete</button>
+            </div>
+          `;
+        }
+
+        return `
+          <article class="announcement-card ${a.pinned ? 'pinned' : ''}" data-id="${a.id}">
+            <div class="announcement-header">
+              <div class="announcement-meta">
+                <div class="announcement-icon ${a.category}">
+                  ${icons[a.category] || icons.general}
+                </div>
+                <div class="announcement-info">
+                  <h3>
+                    ${escapeHtml(a.title)}
+                    ${a.pinned ? '<span class="pin-badge">Pinned</span>' : ''}
+                  </h3>
+                  <span class="announcement-date">${dateStr}</span>
+                </div>
+              </div>
+              <div class="announcement-tags">
+                <span class="tag ${a.category}">${a.category.charAt(0).toUpperCase() + a.category.slice(1)}</span>
+                ${adminActions}
+              </div>
+            </div>
+            <div class="announcement-body">
+              <p class="announcement-content collapsed" id="content-${a.id}">${escapeHtml(a.content)}</p>
+              <button class="read-more" onclick="toggleContent('${a.id}')">Read more</button>
+            </div>
+            <div class="announcement-footer">
+              <div class="posted-by">
+                <span class="posted-by-avatar">${authorInitials}</span>
+                <span>Posted by ${escapeHtml(a.author ? a.author.name : 'Admin')}</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    var editingId = null;
+
+    function openEditModal(id) {
+      editingId = id;
+      var a = announcements.find(function(item) { return item.id === id; });
+      if (!a) return;
+
+      document.getElementById('modalTitle').textContent = 'Edit Announcement';
+      document.getElementById('title').value = a.title;
+      document.getElementById('category').value = a.category;
+      document.getElementById('audience').value = a.audience || 'all';
+      document.getElementById('content').value = a.content;
+      document.getElementById('pinned').checked = a.pinned;
+      document.getElementById('submitBtn').querySelector('span').textContent = 'Save Changes';
+      
+      document.getElementById('createModal').classList.add('active');
+    }
+
+    function openCreateModal() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Create Announcement';
+      document.getElementById('createForm').reset();
+      document.getElementById('submitBtn').querySelector('span').textContent = 'Publish';
+      document.getElementById('createModal').classList.add('active');
+      document.getElementById('title').focus();
+    }
+
+    function deleteAnnouncement(id) {
+      if (!confirm('Are you sure you want to delete this announcement?')) return;
+
+      fetch(API + '/announcements/' + id, {
+        method: 'DELETE',
+        headers: CONFIG.getAuthHeaders(token)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          announcements = announcements.filter(function(a) { return a.id !== id; });
+          updateCounts();
+          renderAnnouncements();
+        } else {
+          alert(data.message || 'Failed to delete announcement');
+        }
+      })
+      .catch(function(err) {
+        console.error('Delete error:', err);
+        // Fallback: local delete
+        announcements = announcements.filter(function(a) { return a.id !== id; });
+        updateCounts();
+        renderAnnouncements();
+      });
+    }
+    
+    function createAnnouncement(e) {
+      e.preventDefault();
+      
+      var title = document.getElementById('title').value.trim();
+      var category = document.getElementById('category').value;
+      var audience = document.getElementById('audience').value;
+      var content = document.getElementById('content').value.trim();
+      var pinned = document.getElementById('pinned').checked;
+      
+      var btn = document.getElementById('submitBtn');
+      var originalBtnText = btn.querySelector('span').textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+      
+      var announcementData = {
+        title: title,
+        category: category,
+        target_audience: audience,
+        content: content,
+        pinned: pinned
+      };
+      
+      var url = API + '/announcements';
+      var method = 'POST';
+      
+      if (editingId) {
+        url += '/' + editingId;
+        method = 'PUT';
+      }
+      
+      fetch(url, {
+        method: method,
+        headers: CONFIG.getAuthHeaders(token),
+        body: JSON.stringify(announcementData)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>${originalBtnText}</span>`;
+        
+        if (data.success) {
+          closeCreateModal();
+          loadAnnouncements();
+        } else {
+          alert(data.message || 'Failed to save announcement');
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>${originalBtnText}</span>`;
+        console.error('Save error:', err);
+        
+        // Local fallback for demo purposes
+        if (editingId) {
+          var index = announcements.findIndex(function(a) { return a.id === editingId; });
+          if (index > -1) {
+            announcements[index] = Object.assign({}, announcements[index], announcementData);
+          }
+        } else {
+          var newA = Object.assign({
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            author: { name: user.name || 'Admin', role: userRole }
+          }, announcementData);
+          announcements.unshift(newA);
+        }
+        updateCounts();
+        renderAnnouncements();
+        closeCreateModal();
+      });
+    }
+    
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+    
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        var routes = {
+          student: CONFIG.ROUTES.STUDENT_DASHBOARD,
+          teacher: CONFIG.ROUTES.TEACHER_DASHBOARD,
+          admin: CONFIG.ROUTES.ADMIN_DASHBOARD
+        };
+        window.location.href = routes[userRole] || 'index.html';
+      }
+    }
+
+    function toggleContent(id) {
+      var content = document.getElementById('content-' + id);
+      var btn = content.nextElementSibling;
+      
+      if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        btn.textContent = 'Read less';
+      } else {
+        content.classList.add('collapsed');
+        btn.textContent = 'Read more';
+      }
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.remove('active');
+      document.getElementById('createForm').reset();
+      editingId = null;
+    }
+    
+    // Close modal on outside click
+    document.getElementById('createModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCreateModal();
+    });
+    
+    // Init
+    init();
+  </script>
+</body>
+</html>

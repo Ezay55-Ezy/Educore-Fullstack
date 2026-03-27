@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timetable | EduCore</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary, #0f172a);
+      color: var(--text-primary, #f8fafc);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      background: var(--card-bg, #1e293b);
+      border-bottom: 1px solid var(--border-color, #334155);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--hover-bg, #334155);
+      border: none;
+      color: var(--text-secondary, #94a3b8);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .back-btn:hover {
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .print-btn {
+      padding: 10px 16px;
+      background: var(--hover-bg, #334155);
+      color: var(--text-secondary, #94a3b8);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .print-btn:hover {
+      background: var(--card-bg, #1e293b);
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    /* Main */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    
+    /* Info Bar */
+    .info-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .info-text h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    
+    .info-text p {
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.85rem;
+    }
+    
+    /* View Toggle */
+    .view-toggle {
+      display: flex;
+      background: var(--bg-tertiary, #334155);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    
+    .view-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary, #94a3b8);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .view-btn.active {
+      background: var(--card-bg, #1e293b);
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    /* Timetable Grid */
+    .timetable-container {
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .timetable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .timetable th,
+    .timetable td {
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border-color, #334155);
+    }
+    
+    .timetable th {
+      background: var(--bg-tertiary, #334155);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    .timetable th.time-header {
+      width: 100px;
+      background: var(--bg-primary, #0f172a);
+    }
+    
+    .timetable th.today {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+    
+    .time-cell {
+      background: var(--bg-primary, #0f172a);
+      font-size: 0.85rem;
+      color: var(--text-secondary, #94a3b8);
+      font-weight: 500;
+    }
+    
+    .class-cell {
+      vertical-align: top;
+      padding: 12px;
+      height: 100px;
+    }
+    
+    .class-cell.empty {
+      background: var(--bg-primary, #0f172a);
+    }
+    
+    .class-card {
+      background: var(--bg-tertiary, #334155);
+      border-radius: 8px;
+      padding: 10px 12px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .class-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-color, rgba(0,0,0,0.3));
+    }
+    
+    .class-card.math { border-left: 3px solid #3b82f6; }
+    .class-card.english { border-left: 3px solid #22c55e; }
+    .class-card.science { border-left: 3px solid #8b5cf6; }
+    .class-card.history { border-left: 3px solid #f59e0b; }
+    .class-card.geography { border-left: 3px solid #06b6d4; }
+    .class-card.kiswahili { border-left: 3px solid #ef4444; }
+    .class-card.chemistry { border-left: 3px solid #ec4899; }
+    .class-card.physics { border-left: 3px solid #14b8a6; }
+    .class-card.biology { border-left: 3px solid #84cc16; }
+    .class-card.cre { border-left: 3px solid #a855f7; }
+    .class-card.break { border-left: 3px solid #64748b; background: var(--bg-primary, #0f172a); }
+    
+    .class-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    
+    .class-teacher,
+    .class-room {
+      font-size: 0.8rem;
+      color: var(--text-secondary, #94a3b8);
+    }
+    
+    /* Day View */
+    .day-view {
+      display: none;
+    }
+    
+    .day-view.active {
+      display: block;
+    }
+    
+    .week-view {
+      display: block;
+    }
+    
+    .week-view.hidden {
+      display: none;
+    }
+    
+    .day-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    
+    .day-btn {
+      padding: 12px 20px;
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 10px;
+      color: var(--text-secondary, #94a3b8);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      min-width: 80px;
+    }
+    
+    .day-btn:hover {
+      background: var(--hover-bg, #334155);
+    }
+    
+    .day-btn.active {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+    
+    .day-btn.today {
+      border-color: #22c55e;
+    }
+    
+    .day-btn.today::after {
+      content: '';
+      display: block;
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      margin: 4px auto 0;
+    }
+    
+    .day-btn span {
+      display: block;
+      font-size: 0.75rem;
+      margin-bottom: 2px;
+    }
+    
+    .day-btn strong {
+      font-size: 1rem;
+    }
+    
+    .day-schedule {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .schedule-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: var(--card-bg, #1e293b);
+      border: 1px solid var(--border-color, #334155);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .schedule-item:hover {
+      border-color: var(--border-light, #475569);
+    }
+    
+    .schedule-time {
+      min-width: 80px;
+      text-align: center;
+      padding-right: 16px;
+      border-right: 1px solid var(--border-color, #334155);
+    }
+    
+    .schedule-time .start {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .schedule-time .end {
+      color: var(--text-muted, #64748b);
+      font-size: 0.85rem;
+    }
+    
+    .schedule-content {
+      flex: 1;
+    }
+    
+    .schedule-content h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .schedule-content .teacher {
+      color: var(--text-secondary, #94a3b8);
+      font-size: 0.9rem;
+    }
+    
+    .schedule-content .room {
+      color: var(--text-muted, #64748b);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    
+    .schedule-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      align-self: flex-start;
+    }
+    
+    .schedule-badge.current {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+    
+    .schedule-badge.upcoming {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+    
+    .schedule-badge.past {
+      background: var(--bg-tertiary, #334155);
+      color: var(--text-muted, #64748b);
+    }
+    
+    .schedule-break {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      background: var(--bg-tertiary, rgba(51, 65, 85, 0.5));
+      border-radius: 8px;
+      color: var(--text-muted, #64748b);
+      font-size: 0.9rem;
+    }
+    
+    .schedule-break svg {
+      margin-right: 8px;
+    }
+    
+    /* Print styles */
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      
+      .header, .info-bar, .view-toggle, .day-selector, .print-btn {
+        display: none !important;
+      }
+      
+      .main {
+        padding: 0;
+        max-width: none;
+      }
+      
+      .timetable-container {
+        border: 1px solid #ddd;
+      }
+      
+      .timetable th,
+      .timetable td {
+        border-color: #ddd;
+      }
+      
+      .class-card {
+        background: #f5f5f5;
+        box-shadow: none;
+      }
+    }
+    
+    @media (max-width: 900px) {
+      .week-view {
+        display: none;
+      }
+      
+      .day-view {
+        display: block;
+      }
+      
+      .view-toggle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" onclick="goBack()" aria-label="Go back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+      <h1>Class Timetable</h1>
+    </div>
+    <div class="header-actions">
+      <button class="print-btn" onclick="window.print()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>Print</span>
+      </button>
+    </div>
+  </header>
+  
+  <main class="main">
+    <div class="info-bar">
+      <div class="info-item">
+        <div class="info-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div class="info-text">
+          <h3 id="className">Loading...</h3>
+          <p id="termInfo">Term 1, 2024</p>
+        </div>
+      </div>
+      
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="setView('week')">Week</button>
+        <button class="view-btn" onclick="setView('day')">Day</button>
+      </div>
+    </div>
+    
+    <!-- Week View -->
+    <div class="week-view" id="weekView">
+      <div class="timetable-container">
+        <table class="timetable" id="timetableGrid">
+          <thead>
+            <tr>
+              <th class="time-header">Time</th>
+              <th data-day="1">Monday</th>
+              <th data-day="2">Tuesday</th>
+              <th data-day="3">Wednesday</th>
+              <th data-day="4">Thursday</th>
+              <th data-day="5">Friday</th>
+            </tr>
+          </thead>
+          <tbody id="timetableBody">
+            <!-- Generated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Day View -->
+    <div class="day-view" id="dayView">
+      <div class="day-selector" id="daySelector">
+        <!-- Generated by JS -->
+      </div>
+      <div class="day-schedule" id="daySchedule">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+  </main>
+  
+  <script src="config.js"></script>
+  <script src="js/theme-manager.js"></script>
+  <script>
+    var API = CONFIG.API_BASE_URL;
+    var userRole = '';
+    var token = '';
+    var user = {};
+    var currentView = 'week';
+    var currentDay = new Date().getDay() || 7; // 1-7 (Mon-Sun)
+    if (currentDay > 5) currentDay = 1; // Default to Monday for weekend
+    
+    var timeSlots = [
+      { start: '08:00', end: '08:45' },
+      { start: '08:45', end: '09:30' },
+      { start: '09:30', end: '10:15' },
+      { start: '10:15', end: '10:45', break: true, label: 'Break' },
+      { start: '10:45', end: '11:30' },
+      { start: '11:30', end: '12:15' },
+      { start: '12:15', end: '13:00' },
+      { start: '13:00', end: '14:00', break: true, label: 'Lunch Break' },
+      { start: '14:00', end: '14:45' },
+      { start: '14:45', end: '15:30' },
+      { start: '15:30', end: '16:15' }
+    ];
+    
+    // Sample timetable data (would come from API)
+    var timetableData = {
+      1: [ // Monday
+        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
+        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
+        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
+        null, // Break
+        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
+        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
+        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
+        null, // Lunch
+        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
+        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
+        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' }
+      ],
+      2: [ // Tuesday
+        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
+        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
+        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
+        null,
+        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
+        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
+        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
+        null,
+        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
+        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
+        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' }
+      ],
+      3: [ // Wednesday
+        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
+        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
+        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
+        null,
+        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
+        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
+        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' },
+        null,
+        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
+        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
+        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' }
+      ],
+      4: [ // Thursday
+        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
+        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
+        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
+        null,
+        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
+        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
+        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
+        null,
+        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
+        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' },
+        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' }
+      ],
+      5: [ // Friday
+        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
+        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
+        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
+        null,
+        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
+        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
+        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
+        null,
+        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
+        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
+        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' }
+      ]
+    };
+    
+    function detectRole() {
+      if (localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_TOKEN)) {
+        userRole = 'teacher';
+        token = localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_TOKEN);
+        user = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_USER) || '{}');
+      } else if (localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN)) {
+        userRole = 'student';
+        token = localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN);
+        user = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_USER) || '{}');
+      } else {
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+    
+    function init() {
+      if (!detectRole()) return;
+      
+      document.getElementById('className').textContent = user.class || user.className || 'Form 4 East';
+      document.getElementById('termInfo').textContent = 'Term 1, ' + new Date().getFullYear();
+      
+      // Highlight today
+      var today = new Date().getDay();
+      if (today >= 1 && today <= 5) {
+        var todayHeader = document.querySelector('th[data-day="' + today + '"]');
+        if (todayHeader) todayHeader.classList.add('today');
+      }
+      
+      renderWeekView();
+      renderDaySelector();
+      renderDaySchedule();
+    }
+    
+    function setView(view) {
+      currentView = view;
+      
+      document.querySelectorAll('.view-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === view);
+      });
+      
+      document.getElementById('weekView').classList.toggle('hidden', view !== 'week');
+      document.getElementById('dayView').classList.toggle('active', view === 'day');
+    }
+    
+    function renderWeekView() {
+      var tbody = document.getElementById('timetableBody');
+      var html = '';
+      
+      timeSlots.forEach(function(slot, index) {
+        html += '<tr>';
+        html += '<td class="time-cell">' + slot.start + '<br>' + slot.end + '</td>';
+        
+        if (slot.break) {
+          html += '<td colspan="5" class="class-cell empty">';
+          html += '<div class="class-card break">';
+          html += '<span class="class-name">' + slot.label + '</span>';
+          html += '</div></td>';
+        } else {
+          for (var day = 1; day <= 5; day++) {
+            var classData = timetableData[day][index];
+            if (classData) {
+              html += '<td class="class-cell">';
+              html += '<div class="class-card ' + classData.type + '">';
+              html += '<span class="class-name">' + classData.subject + '</span>';
+              html += '<span class="class-teacher">' + classData.teacher + '</span>';
+              html += '<span class="class-room">' + classData.room + '</span>';
+              html += '</div></td>';
+            } else {
+              html += '<td class="class-cell empty"></td>';
+            }
+          }
+        }
+        
+        html += '</tr>';
+      });
+      
+      tbody.innerHTML = html;
+    }
+    
+    function renderDaySelector() {
+      var selector = document.getElementById('daySelector');
+      var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      var today = new Date();
+      var todayDay = today.getDay();
+      
+      var html = days.map(function(day, i) {
+        var dayNum = i + 1;
+        var date = new Date(today);
+        date.setDate(today.getDate() - (todayDay - dayNum));
+        
+        var isToday = dayNum === todayDay;
+        var isActive = dayNum === currentDay;
+        
+        return '<button class="day-btn ' + (isActive ? 'active' : '') + ' ' + (isToday ? 'today' : '') + '" onclick="selectDay(' + dayNum + ')">' +
+          '<span>' + day + '</span>' +
+          '<strong>' + date.getDate() + '</strong>' +
+          '</button>';
+      }).join('');
+      
+      selector.innerHTML = html;
+    }
+    
+    function selectDay(day) {
+      currentDay = day;
+      renderDaySelector();
+      renderDaySchedule();
+    }
+    
+    function renderDaySchedule() {
+      var schedule = document.getElementById('daySchedule');
+      var dayClasses = timetableData[currentDay] || [];
+      var now = new Date();
+      var currentTime = now.getHours() * 60 + now.getMinutes();
+      var isToday = now.getDay() === currentDay;
+      
+      var html = timeSlots.map(function(slot, index) {
+        var classData = dayClasses[index];
+        var slotStart = parseInt(slot.start.split(':')[0]) * 60 + parseInt(slot.start.split(':')[1]);
+        var slotEnd = parseInt(slot.end.split(':')[0]) * 60 + parseInt(slot.end.split(':')[1]);
+        
+        var status = 'upcoming';
+        if (isToday) {
+          if (currentTime >= slotStart && currentTime < slotEnd) {
+            status = 'current';
+          } else if (currentTime >= slotEnd) {
+            status = 'past';
+          }
+        }
+        
+        if (slot.break) {
+          return '<div class="schedule-break">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>' +
+            slot.label + ' (' + slot.start + ' - ' + slot.end + ')' +
+            '</div>';
+        }
+        
+        if (!classData) return '';
+        
+        var statusLabel = status === 'current' ? 'Now' : (status === 'upcoming' ? 'Upcoming' : 'Completed');
+        
+        return '<div class="schedule-item">' +
+          '<div class="schedule-time">' +
+            '<div class="start">' + slot.start + '</div>' +
+            '<div class="end">' + slot.end + '</div>' +
+          '</div>' +
+          '<div class="schedule-content">' +
+            '<h3>' + classData.subject + '</h3>' +
+            '<p class="teacher">' + classData.teacher + '</p>' +
+            '<p class="room">' + classData.room + '</p>' +
+          '</div>' +
+          '<span class="schedule-badge ' + status + '">' + statusLabel + '</span>' +
+          '</div>';
+      }).join('');
+      
+      schedule.innerHTML = html;
+    }
+    
+    function goBack() {
+      var routes = {
+        student: CONFIG.ROUTES.STUDENT_DASHBOARD,
+        teacher: CONFIG.ROUTES.TEACHER_DASHBOARD
+      };
+      window.location.href = routes[userRole] || 'index.html';
+    }
+    
+    init();
+  </script>
+</body>
+</html>

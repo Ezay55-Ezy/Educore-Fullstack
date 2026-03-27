@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCore — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060910;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --surface3: #1c2333;
+    --ink: #f0f6ff;
+    --ink-soft: #8b9bb4;
+    --ink-muted: #4a5568;
+    --border: rgba(255,255,255,0.07);
+    --radius: 14px;
+
+    /* Role colors */
+    --student: #3b82f6;
+    --student-glow: rgba(59,130,246,0.2);
+    --teacher: #22c55e;
+    --teacher-glow: rgba(34,197,94,0.2);
+    --admin: #f59e0b;
+    --admin-glow: rgba(245,158,11,0.2);
+
+    --active-color: var(--student);
+    --active-glow: var(--student-glow);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    transition: background 0.4s ease;
+  }
+  .bg-orb-1 {
+    width: 500px; height: 500px;
+    top: -100px; left: -100px;
+    background: radial-gradient(circle, var(--active-glow) 0%, transparent 70%);
+    transition: background 0.5s ease;
+  }
+  .bg-orb-2 {
+    width: 400px; height: 400px;
+    bottom: -80px; right: -80px;
+    background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+  }
+
+  .bg-grid {
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ── CARD ── */
+  .login-card {
+    width: 100%; max-width: 460px;
+    padding: 24px;
+    position: relative; z-index: 10;
+    animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── BRAND ── */
+  .brand {
+    text-align: center; margin-bottom: 28px;
+  }
+
+  .brand-logo {
+    width: 54px; height: 54px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 14px;
+    display: grid; place-items: center;
+    font-size: 26px; margin: 0 auto 12px;
+    box-shadow: 0 0 30px rgba(59,130,246,0.25);
+    transition: all 0.4s ease;
+  }
+
+  .brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; letter-spacing: 0.02em;
+  }
+
+  .brand-tagline {
+    font-size: 13px; color: var(--ink-muted);
+    font-weight: 300; margin-top: 4px;
+  }
+
+  /* ── CARD INNER ── */
+  .card-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    transition: border-color 0.4s ease;
+  }
+
+  /* ── ROLE SELECTOR ── */
+  .role-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 10px;
+  }
+
+  .role-tabs {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px; margin-bottom: 26px;
+  }
+
+  .role-tab {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .role-tab:hover {
+    border-color: rgba(255,255,255,0.15);
+    background: var(--surface3);
+  }
+
+  .role-tab-icon { font-size: 22px; }
+
+  .role-tab-name {
+    font-size: 12px; font-weight: 600;
+    color: var(--ink-soft);
+    transition: color 0.2s;
+  }
+
+  .role-tab-hint {
+    font-size: 10px; color: var(--ink-muted);
+    text-align: center; line-height: 1.3;
+  }
+
+  /* Active states per role */
+  .role-tab.active-student {
+    border-color: var(--student);
+    background: rgba(59,130,246,0.08);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .role-tab.active-student .role-tab-name { color: var(--student); }
+
+  .role-tab.active-teacher {
+    border-color: var(--teacher);
+    background: rgba(34,197,94,0.08);
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+  }
+  .role-tab.active-teacher .role-tab-name { color: var(--teacher); }
+
+  .role-tab.active-admin {
+    border-color: var(--admin);
+    background: rgba(245,158,11,0.08);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+  }
+  .role-tab.active-admin .role-tab-name { color: var(--admin); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px; background: var(--border);
+    margin: 0 0 24px;
+  }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 16px; }
+
+  label {
+    display: block; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 7px;
+    transition: color 0.3s;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-icon {
+    position: absolute; left: 13px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px; color: var(--ink-muted);
+    pointer-events: none; transition: color 0.2s;
+  }
+
+  .input-wrap:focus-within .input-icon { color: var(--active-color); }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 13px 12px 40px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px; outline: none;
+    transition: all 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--active-color) !important;
+    box-shadow: 0 0 0 3px var(--active-glow) !important;
+  }
+
+  input.error { border-color: #ef4444 !important; }
+
+  .toggle-pass {
+    position: absolute; right: 11px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-muted); font-size: 15px;
+  }
+
+  /* ── ERROR BANNER ── */
+  .error-banner {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius);
+    padding: 11px 14px; font-size: 13px; color: #fca5a5;
+    margin-bottom: 16px; display: none;
+    align-items: center; gap: 8px;
+  }
+  .error-banner.show { display: flex; }
+
+  /* ── LOGIN BUTTON ── */
+  .btn-login {
+    width: 100%; padding: 13px;
+    border: none; border-radius: var(--radius);
+    color: #000; font-family: 'Outfit', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.3s;
+    margin-top: 8px; position: relative;
+    background: var(--student);
+    box-shadow: 0 4px 20px var(--student-glow);
+  }
+
+  .btn-login:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-login:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+
+  .btn-login.role-teacher { background: var(--teacher); box-shadow: 0 4px 20px var(--teacher-glow); }
+  .btn-login.role-admin   { background: var(--admin);   box-shadow: 0 4px 20px var(--admin-glow); }
+
+  .spinner {
+    display: none; width: 18px; height: 18px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000; border-radius: 50%;
+    animation: spin 0.7s linear infinite; margin: 0 auto;
+  }
+  .btn-login.loading .btn-text { display: none; }
+  .btn-login.loading .spinner  { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── HINT ── */
+  .hint {
+    text-align: center; margin-top: 16px;
+    font-size: 12px; color: var(--ink-muted);
+    line-height: 1.6;
+  }
+  .hint strong { color: var(--ink-soft); }
+
+  /* ── ID LABEL ── */
+  #idLabel { transition: all 0.2s; }
+</style>
+</head>
+<body>
+
+<div class="bg-orb bg-orb-1" id="bgOrb"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-grid"></div>
+
+<div class="login-card">
+
+  <!-- BRAND -->
+  <div class="brand">
+    <div class="brand-logo" id="brandLogo">🎓</div>
+    <div class="brand-name">EduCore</div>
+    <div class="brand-tagline">School Management System</div>
+  </div>
+
+  <div class="card-inner" id="cardInner">
+
+    <!-- ROLE SELECTOR -->
+    <div class="role-label">I am a…</div>
+    <div class="role-tabs">
+      <button class="role-tab active-student" id="tab-student" onclick="selectRole('student')">
+        <span class="role-tab-icon">🎓</span>
+        <span class="role-tab-name">Student</span>
+        <span class="role-tab-hint">View grades & attendance</span>
+      </button>
+      <button class="role-tab" id="tab-teacher" onclick="selectRole('teacher')">
+        <span class="role-tab-icon">📚</span>
+        <span class="role-tab-name">Teacher</span>
+        <span class="role-tab-hint">Mark attendance & grades</span>
+      </button>
+      <button class="role-tab" id="tab-admin" onclick="selectRole('admin')">
+        <span class="role-tab-icon">⚙️</span>
+        <span class="role-tab-name">Admin</span>
+        <span class="role-tab-hint">Manage school system</span>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ERROR -->
+    <div class="error-banner" id="errorBanner">
+      <span>⚠️</span><span id="errorMsg">Invalid credentials.</span>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-group">
+      <label id="idLabel">Admission Number</label>
+      <div class="input-wrap">
+        <span class="input-icon" id="idIcon">🪪</span>
+        <input type="text" id="idInput" placeholder="e.g. ADM-2024-001">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="passwordInput" placeholder="Enter your password">
+        <button class="toggle-pass" id="toggleBtn" type="button">👁</button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="loginBtn" type="button">
+      <span class="btn-text" id="btnText">Sign In as Student →</span>
+      <div class="spinner"></div>
+    </button>
+
+    <div class="hint" id="hintText">
+      Student: <strong>ADM-2024-001</strong> / <strong>password123</strong>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+var API         = CONFIG.API_BASE_URL;
+var currentRole = 'student';
+
+var roleConfig = {
+  student: {
+    color:       '#3b82f6',
+    glow:        'rgba(59,130,246,0.2)',
+    idLabel:     'Admission Number',
+    idIcon:      '🪪',
+    placeholder: 'e.g. ADM-2024-001',
+    btnText:     'Sign In as Student',
+    btnClass:    'role-student',
+    logoEmoji:   '🎓',
+    logoGrad:    'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+    hint:        'Enter your admission number and password',
+    tokenKey:    CONFIG.STORAGE_KEYS.STUDENT_TOKEN,
+    userKey:     CONFIG.STORAGE_KEYS.STUDENT_USER,
+    redirect:    CONFIG.ROUTES.STUDENT_DASHBOARD
+  },
+  teacher: {
+    color:       '#22c55e',
+    glow:        'rgba(34,197,94,0.2)',
+    idLabel:     'Email Address',
+    idIcon:      '✉️',
+    placeholder: 'Enter your email',
+    btnText:     'Sign In as Teacher',
+    btnClass:    'role-teacher',
+    logoEmoji:   '📚',
+    logoGrad:    'linear-gradient(135deg, #22c55e, #16a34a)',
+    hint:        'Enter your registered email and password',
+    tokenKey:    CONFIG.STORAGE_KEYS.TEACHER_TOKEN,
+    userKey:     CONFIG.STORAGE_KEYS.TEACHER_USER,
+    redirect:    CONFIG.ROUTES.TEACHER_DASHBOARD
+  },
+  admin: {
+    color:       '#f59e0b',
+    glow:        'rgba(245,158,11,0.2)',
+    idLabel:     'Email Address',
+    idIcon:      '✉️',
+    placeholder: 'Enter your email',
+    btnText:     'Sign In as Admin',
+    btnClass:    'role-admin',
+    logoEmoji:   '⚙️',
+    logoGrad:    'linear-gradient(135deg, #f59e0b, #d97706)',
+    hint:        'Enter your admin email and password',
+    tokenKey:    CONFIG.STORAGE_KEYS.ADMIN_TOKEN,
+    userKey:     CONFIG.STORAGE_KEYS.ADMIN_USER,
+    redirect:    CONFIG.ROUTES.ADMIN_DASHBOARD
+  }
+};
+
+function selectRole(role) {
+  currentRole = role;
+  var cfg = roleConfig[role];
+
+  // Update tabs
+  document.querySelectorAll('.role-tab').forEach(function(t) {
+    t.className = 'role-tab';
+  });
+  document.getElementById('tab-' + role).className = 'role-tab active-' + role;
+
+  // Update form labels
+  document.getElementById('idLabel').textContent      = cfg.idLabel;
+  document.getElementById('idIcon').textContent        = cfg.idIcon;
+  document.getElementById('idInput').placeholder       = cfg.placeholder;
+  document.getElementById('btnText').textContent       = cfg.btnText;
+  document.getElementById('hintText').innerHTML        = cfg.hint;
+  document.getElementById('loginBtn').className        = 'btn-login ' + cfg.btnClass;
+
+  // Update logo
+  document.getElementById('brandLogo').textContent    = cfg.logoEmoji;
+  document.getElementById('brandLogo').style.background = cfg.logoGrad;
+  document.getElementById('brandLogo').style.boxShadow   = '0 0 30px ' + cfg.glow;
+
+  // Update background orb
+  document.getElementById('bgOrb').style.background =
+    'radial-gradient(circle, ' + cfg.glow + ' 0%, transparent 70%)';
+
+  // Clear errors and inputs
+  clearError();
+  document.getElementById('idInput').value       = '';
+  document.getElementById('passwordInput').value = '';
+}
+
+// Toggle password
+document.getElementById('toggleBtn').addEventListener('click', function() {
+  var inp = document.getElementById('passwordInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  this.textContent = inp.type === 'password' ? '👁' : '🙈';
+});
+
+// Enter key
+document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('idInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+function clearError() {
+  document.getElementById('errorBanner').classList.remove('show');
+  document.getElementById('idInput').classList.remove('error');
+  document.getElementById('passwordInput').classList.remove('error');
+}
+
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBanner').classList.add('show');
+  document.getElementById('idInput').classList.add('error');
+  document.getElementById('passwordInput').classList.add('error');
+}
+
+// Login button
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+
+function doLogin() {
+  var id       = document.getElementById('idInput').value.trim();
+  var password = document.getElementById('passwordInput').value;
+  var btn      = document.getElementById('loginBtn');
+  var cfg      = roleConfig[currentRole];
+
+  if (!id)       { showError('Please enter your ' + cfg.idLabel.toLowerCase() + '.'); return; }
+  if (!password) { showError('Please enter your password.'); return; }
+
+  btn.classList.add('loading'); btn.disabled = true;
+  clearError();
+
+  fetch(API + '/auth/login', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ admission_no: id, password: password })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    console.log('Login response:', data);
+
+    if (!data.success) {
+      showError(data.message || 'Invalid credentials. Please try again.');
+      return;
+    }
+
+    var userRole = data.user.role;
+
+    // Check role matches selected tab
+    if (userRole !== currentRole) {
+      showError('Wrong portal! You are a ' + userRole + '. Please select the correct role above.');
+      return;
+    }
+
+    // Save token and redirect
+    localStorage.setItem(cfg.tokenKey, data.token);
+    localStorage.setItem(cfg.userKey,  JSON.stringify(data.user));
+    window.location.href = cfg.redirect;
+  })
+  .catch(function(err) {
+    console.error(err);
+    showError(CONFIG.ERRORS.CONNECTION_FAILED);
+  })
+  .finally(function() {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  });
+}
+
+// Init — default to student tab
+selectRole('student');
+</script>
+</body>
+</html>

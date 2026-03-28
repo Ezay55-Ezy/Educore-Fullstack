@@ -11,8 +11,9 @@ app.use(cors({
     'http://127.0.0.1:3000',
     'http://localhost:4200',
     'http://127.0.0.1:5500',
-    'https://educore-school.netlify.app'
-  ],
+    'https://educore-school.netlify.app',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
 

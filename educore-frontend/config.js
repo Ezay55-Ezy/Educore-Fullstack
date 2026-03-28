@@ -4,7 +4,7 @@
  */
 const CONFIG = {
   // API Configuration - Local Development
-  API_BASE_URL: 'http://localhost:5000/api',
+  API_BASE_URL: process.env.VITE_API_URL || 'http://localhost:5000/api',
   
   // App Information
   APP_NAME: 'EduCore',

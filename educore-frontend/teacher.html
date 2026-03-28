@@ -598,7 +598,7 @@
   const token = localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_TOKEN);
   const teacher = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_USER) || '{}');
 
-  if (!token || !teacher.id) {
+  if (!token || teacher.role !== 'teacher') {
     window.location.href = CONFIG.ROUTES.TEACHER_LOGIN;
   }
 
@@ -610,8 +610,13 @@
     token: token
   });
 
-document.getElementById('teacherName').textContent   = teacher.name || 'Teacher';
-document.getElementById('teacherAvatar').textContent = (teacher.name || 'T')[0].toUpperCase();
+  document.getElementById('teacherName').textContent   = (teacher.first_name || 'Teacher') + ' ' + (teacher.last_name || '');
+  document.getElementById('teacherAvatar').textContent = (teacher.first_name || 'T')[0].toUpperCase();
+
+  // Load initial data
+  if (typeof loadTeacherStats === 'function') loadTeacherStats();
+  loadGrades(); // This loads grades into attendance & CBC select
+  loadLearningAreas();
 
 // Set today's date
 document.getElementById('attDate').value = CONFIG.getTodayISO();
@@ -627,6 +632,18 @@ var gradeClasses = [];
 var currentLearningAreas = [];
 var studentMap  = {}; // class_id → students array
 var attStatus   = {}; // student_id → status
+
+async function loadTeacherStats() {
+  try {
+    const res = await fetch(API + '/teacher/stats', { headers: authH() });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('ovClasses').textContent = data.stats.totalClasses;
+      document.getElementById('ovStudents').textContent = data.stats.totalStudents;
+      // ovSubjects is updated in loadLearningAreas
+    }
+  } catch (e) { console.error(e); }
+}
 
 async function loadGrades() {
   try {

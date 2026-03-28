@@ -37,9 +37,9 @@ const getAdminStats = async (req, res) => {
     res.json({
       success: true,
       stats: {
-        totalStudents: parseInt(studentsRes.rows[0].count),
-        totalTeachers: parseInt(teachersRes.rows[0].count),
-        totalClasses: parseInt(classesRes.rows[0].count),
+        totalStudents: parseInt(studentsRes.rows[0].count || 0),
+        totalTeachers: parseInt(teachersRes.rows[0].count || 0),
+        totalClasses: parseInt(classesRes.rows[0].count || 0),
         avgAttendance,
         totalFees
       },

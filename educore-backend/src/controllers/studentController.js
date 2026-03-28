@@ -94,7 +94,10 @@ const getAllStudents = async (req, res) => {
     res.json({
       success: true,
       count: result.rows.length,
-      students: result.rows
+      students: result.rows.map(s => ({
+        ...s,
+        grade: parseInt(s.grade) // Ensure grade is an integer for frontend filtering
+      }))
     });
 
   } catch (error) {
@@ -103,7 +106,120 @@ const getAllStudents = async (req, res) => {
   }
 };
 
+// ── POST /api/students — Register new student ───────────────
+const registerStudent = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const {
+      first_name, last_name, admission_no, date_of_birth, gender,
+      blood_group, address, admission_date, class_id, status,
+      parent_name, parent_relationship, parent_phone, parent_email
+    } = req.body;
+
+    if (!first_name || !last_name || !admission_no) {
+      return res.status(400).json({ success: false, message: 'Missing required fields.' });
+    }
+
+    await client.query('BEGIN');
+
+    // 1. Insert student
+    const studentRes = await client.query(
+      `INSERT INTO students (
+        first_name, last_name, admission_no, date_of_birth, gender,
+        blood_group, address, admission_date, class_id, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+      [first_name, last_name, admission_no, date_of_birth, gender, blood_group, address, admission_date || new Date(), class_id, status || 'Active']
+    );
+
+    const studentId = studentRes.rows[0].id;
+
+    // 2. Insert parent
+    if (parent_name) {
+      await client.query(
+        `INSERT INTO parents (student_id, full_name, relationship, phone_primary, email)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [studentId, parent_name, parent_relationship, parent_phone, parent_email]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json({ success: true, message: 'Student registered successfully.', studentId });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Register student error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  } finally {
+    client.release();
+  }
+};
+
+// ── PUT /api/students/:id — Update student ──────────────────
+const updateStudent = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    const {
+      first_name, last_name, date_of_birth, gender, blood_group,
+      address, class_id, status, kcpe_score,
+      parent_name, parent_relationship, parent_phone, parent_email
+    } = req.body;
+
+    await client.query('BEGIN');
+
+    // 1. Update student
+    await client.query(
+      `UPDATE students SET
+        first_name = $1, last_name = $2, date_of_birth = $3, gender = $4,
+        blood_group = $5, address = $6, class_id = $7, status = $8, kcpe_score = $9
+      WHERE id = $10`,
+      [first_name, last_name, date_of_birth, gender, blood_group, address, class_id, status, kcpe_score, id]
+    );
+
+    // 2. Update parent (simplified: delete and re-insert or update if exists)
+    if (parent_name) {
+      await client.query(
+        `INSERT INTO parents (student_id, full_name, relationship, phone_primary, email)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (student_id) DO UPDATE SET
+           full_name = $2, relationship = $3, phone_primary = $4, email = $5`,
+        [id, parent_name, parent_relationship, parent_phone, parent_email]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Student updated successfully.' });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Update student error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  } finally {
+    client.release();
+  }
+};
+
+// ── DELETE /api/students/:id — Delete student ───────────────
+const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Parent records will be deleted automatically if CASCADE is set in DB,
+    // but let's be explicit if not.
+    await pool.query('DELETE FROM parents WHERE student_id = $1', [id]);
+    await pool.query('DELETE FROM students WHERE id = $1', [id]);
+
+    res.json({ success: true, message: 'Student deleted successfully.' });
+  } catch (error) {
+    console.error('Delete student error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 module.exports = {
   getStudentById,
-  getAllStudents
+  getAllStudents,
+  registerStudent,
+  updateStudent,
+  deleteStudent
 };

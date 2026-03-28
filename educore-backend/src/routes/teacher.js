@@ -3,9 +3,10 @@ const router  = express.Router();
 const {
   getGrades, getClassesByGrade, getClassStudents,
   getAttendance, saveAttendance,
-  getLearningAreas
+  getLearningAreas,
+  registerTeacher, deleteTeacher, getAllTeachers
 } = require('../controllers/teacherController');
-const { protect } = require('../middleware/auth');
+const { protect, adminOnly } = require('../middleware/auth');
 
 // All teacher routes require login
 router.use(protect);
@@ -16,5 +17,10 @@ router.get('/classes/:id/students',   getClassStudents);
 router.get('/attendance',             getAttendance);
 router.post('/attendance',            saveAttendance);
 router.get('/learning-areas',         getLearningAreas);
+
+// Admin-only teacher management
+router.get('/', adminOnly, getAllTeachers);
+router.post('/', adminOnly, registerTeacher);
+router.delete('/:id', adminOnly, deleteTeacher);
 
 module.exports = router;

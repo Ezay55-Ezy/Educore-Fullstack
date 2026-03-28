@@ -3,8 +3,8 @@
  * Centralized settings - update API_BASE_URL for your deployment
  */
 const CONFIG = {
-  // API Configuration - Verified Render URL
-  API_BASE_URL: 'https://educore-api.onrender.com/api',
+  // API Configuration - Local Development
+  API_BASE_URL: 'http://localhost:5000/api',
   
   // App Information
   APP_NAME: 'EduCore',

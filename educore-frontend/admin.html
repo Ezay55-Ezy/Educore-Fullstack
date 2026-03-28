@@ -1145,6 +1145,10 @@
   document.getElementById('adminName').textContent   = admin.name || 'Admin';
   document.getElementById('adminAvatar').textContent = (admin.name || 'A')[0].toUpperCase();
 
+  // Load initial data
+  loadStudents();
+  loadStats();
+
   function authHeaders() {
     return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
   }
@@ -1169,8 +1173,19 @@
       const data = await res.json();
 
       if (data.success) {
-        allStudents = data.students;
-        renderStudents(allStudents);
+        allStudents = data.students.map(s => ({
+          ...s,
+          first_name: s.first_name || 'N/A',
+          last_name: s.last_name || ''
+        }));
+        
+        // Apply current filter immediately after loading
+        const filterVal = document.getElementById('gradeFilter').value;
+        if (filterVal) {
+          filterByGrade(filterVal);
+        } else {
+          renderStudents(allStudents);
+        }
         updateStats(allStudents);
       }
     } catch (err) {
@@ -1239,8 +1254,14 @@
   }
 
   function filterByGrade(g) {
-    if (!g) { renderStudents(allStudents); return; }
-    renderStudents(allStudents.filter(s => s.grade === parseInt(g)));
+    const filterVal = g.trim();
+    if (!filterVal) { 
+      renderStudents(allStudents); 
+      return; 
+    }
+    // Filter by form_level (integer)
+    const filtered = allStudents.filter(s => s.grade === parseInt(filterVal));
+    renderStudents(filtered);
   }
 
   // ── VIEW STUDENT ──
@@ -1537,10 +1558,14 @@
 
   async function loadTeachers() {
     try {
-      const res  = await fetch(`${API}/students/teachers`, { headers: authHeaders() });
+      const res  = await fetch(`${API}/teacher`, { headers: authHeaders() });
       const data = await res.json();
       if (data.success) {
-        allTeachers = data.teachers;
+        allTeachers = data.teachers.map(t => ({
+          ...t,
+          first_name: t.first_name || 'Teacher',
+          last_name: t.last_name || ''
+        }));
         renderTeachers(allTeachers);
         document.getElementById('navTeacherCount').textContent = allTeachers.length;
         document.getElementById('teacherCountText').textContent = `${allTeachers.length} teachers registered`;
@@ -1558,19 +1583,21 @@
       tbody.innerHTML = `<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--ink-muted);">No teachers registered yet.</td></tr>`;
       return;
     }
-    tbody.innerHTML = teachers.map((t, i) => `
+    tbody.innerHTML = teachers.map((t, i) => {
+      const displayName = t.first_name ? `${t.first_name} ${t.last_name}` : (t.name || t.email);
+      return `
       <tr>
         <td>
           <div class="s-cell">
-            <div class="s-avatar" style="background:${avatarColors[i % avatarColors.length]}">${initials(t.name || t.email)}</div>
+            <div class="s-avatar" style="background:${avatarColors[i % avatarColors.length]}">${initials(displayName)}</div>
             <div>
-              <div class="s-name">${t.name || t.email}</div>
-              <div class="s-sub">${t.subject || 'Teacher'}</div>
+              <div class="s-name">${displayName}</div>
+              <div class="s-sub">${t.main_subject || t.subject || 'Teacher'}</div>
             </div>
           </div>
         </td>
         <td style="color:var(--ink-muted);font-size:12px;">${t.email || '—'}</td>
-        <td style="font-family:monospace;font-size:11px;color:var(--ink-muted)">${t.admission_no || '—'}</td>
+        <td style="font-family:monospace;font-size:11px;color:var(--ink-muted)">${t.staff_no || t.admission_no || '—'}</td>
         <td><span class="badge badge-blue">Teacher</span></td>
         <td>
           <div class="row-actions">
@@ -1578,7 +1605,7 @@
           </div>
         </td>
       </tr>
-    `).join('');
+    `; }).join('');
   }
 
   function openTeacherModal() {
@@ -1606,11 +1633,11 @@
     btn.textContent = 'Registering…'; btn.disabled = true;
 
     try {
-      const res  = await fetch(`${API}/students/register-teacher`, {
+      const res  = await fetch(`${API}/teacher`, {
         method: 'POST', headers: authHeaders(),
         body: JSON.stringify({
           name, email, password,
-          admission_no: staffno || null,
+          staff_no: staffno || null,
           subject: document.getElementById('t_subject').value.trim(),
           phone:   document.getElementById('t_phone').value.trim(),
         })
@@ -1633,7 +1660,7 @@
   async function deleteTeacher(id) {
     if (!confirm('Remove this teacher account? This cannot be undone.')) return;
     try {
-      const res  = await fetch(`${API}/students/teachers/${id}`, {
+      const res  = await fetch(`${API}/teacher/${id}`, {
         method: 'DELETE', headers: authHeaders()
       });
       const data = await res.json();
@@ -1668,7 +1695,7 @@
       return;
     }
     tbody.innerHTML = classes.map(c => `
-      <tr>
+      <tr id="class-row-${c.id}">
         <td style="font-weight:600; color:var(--accent);">${c.name}</td>
         <td>Form ${c.form_level}</td>
         <td>${c.stream || '—'}</td>
@@ -1680,6 +1707,28 @@
         </td>
       </tr>
     `).join('');
+  }
+
+  async function deleteClass(id) {
+    if (!confirm('Are you sure? This will fail if students are enrolled.')) return;
+    try {
+      const res = await fetch(`${API}/classes/${id}`, {
+        method: 'DELETE', headers: authHeaders()
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('✅ Deleted', 'Class removed successfully.');
+        loadClasses();
+      } else {
+        showToast('❌ Error', data.message);
+      }
+    } catch (err) {
+      showToast('❌ Error', 'Could not delete class.');
+    }
+  }
+
+  function editClass(id) {
+    showToast('💡 Info', 'Class editing modal coming in next update.');
   }
 
   // ── SETTINGS ──
@@ -1776,13 +1825,15 @@
   // ── LOAD STATS ──
   async function loadStats() {
     try {
-      const res = await fetch(`${API}/stats/admin`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${API}/stats`, { headers: authHeaders() });
       const data = await res.json();
       if (data.success) {
-        document.getElementById('totalStudents').textContent = data.stats.totalStudents;
-        document.getElementById('totalTeachers').textContent = data.stats.totalTeachers;
-        document.getElementById('totalClasses').textContent  = data.stats.totalClasses;
-        document.getElementById('avgAttendance').textContent = data.stats.avgAttendance + '%';
+        document.getElementById('statTotal').textContent = data.stats.totalStudents;
+        document.getElementById('ovTotal').textContent   = data.stats.totalStudents;
+        document.getElementById('ovTeachers').textContent = data.stats.totalTeachers;
+        document.getElementById('statClasses').textContent = data.stats.totalClasses;
+        document.getElementById('ovAttendance').textContent = data.stats.avgAttendance + '%';
+        document.getElementById('ovFeesCollected').textContent = 'KSh ' + data.stats.totalFees.toLocaleString();
         
         // Render charts if data is available
         if (window.renderCharts) renderCharts(data.enrollmentTrend);

@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const pool = require('../config/database');
 const { createNotification } = require('./notificationController');
 
@@ -117,11 +119,84 @@ const getLearningAreas = async (req, res) => {
   }
 };
 
+const registerTeacher = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { name, email, phone, subject, password, staff_no } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email and password are required.' });
+    }
+
+    await client.query('BEGIN');
+
+    // 1. Create teacher record
+    const names = name.split(' ');
+    const firstName = names[0];
+    const lastName = names.slice(1).join(' ') || 'Teacher';
+
+    const teacherRes = await client.query(
+      `INSERT INTO teachers (first_name, last_name, email, phone, main_subject, staff_no, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [firstName, lastName, email, phone, subject, staff_no, 'Active']
+    );
+    const teacherId = teacherRes.rows[0].id;
+
+    // 2. Create user record for login
+    const passwordHash = await bcrypt.hash(password, 10);
+    await client.query(
+      `INSERT INTO users (email, admission_no, password_hash, role, teacher_id)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [email, staff_no || email, passwordHash, 'teacher', teacherId]
+    );
+
+    await client.query('COMMIT');
+    res.status(201).json({ success: true, message: 'Teacher registered successfully.' });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Register teacher error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  } finally {
+    client.release();
+  }
+};
+
+const deleteTeacher = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    await client.query('BEGIN');
+    await client.query('DELETE FROM users WHERE teacher_id = $1', [id]);
+    await client.query('DELETE FROM teachers WHERE id = $1', [id]);
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Teacher deleted successfully.' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Delete teacher error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  } finally {
+    client.release();
+  }
+};
+
+const getAllTeachers = async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM teachers ORDER BY last_name, first_name');
+    res.json({ success: true, teachers: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 module.exports = {
   getGrades,
   getClassesByGrade,
   getClassStudents,
   getAttendance,
   saveAttendance,
-  getLearningAreas
+  getLearningAreas,
+  registerTeacher,
+  deleteTeacher,
+  getAllTeachers
 };

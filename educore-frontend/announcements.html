@@ -729,18 +729,12 @@
       .then(function(data) {
         if (data.success) {
           announcements = data.announcements || [];
-        } else {
-          // Use sample data if API doesn't exist
-          announcements = getSampleAnnouncements();
+          updateCounts();
+          renderAnnouncements();
         }
-        updateCounts();
-        renderAnnouncements();
       })
       .catch(function(err) {
-        console.warn('Could not fetch announcements, using sample data');
-        announcements = getSampleAnnouncements();
-        updateCounts();
-        renderAnnouncements();
+        console.error('Could not fetch announcements:', err);
       });
     }
     

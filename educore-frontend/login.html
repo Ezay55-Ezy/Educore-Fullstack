@@ -385,7 +385,8 @@
 
 <script src="config.js"></script>
 <script>
-  const API = CONFIG.API_BASE_URL;
+  // API URL is now dynamically loaded from config.js
+  console.log('Login page loaded. API URL:', CONFIG.API_BASE_URL);
 
   function togglePassword() {
     const input = document.getElementById('password');
@@ -425,22 +426,32 @@
     btn.classList.add('loading');
     btn.disabled = true;
 
+    console.log('=== EduCore Login Submission ===');
     console.log('EduCore: Login Started');
-    const apiUrl = `${API}/auth/login`;
-    console.log('Target API:', apiUrl);
+    console.log('Admission No:', admissionNo);
+    
+    // Debug: Check CONFIG is available
+    console.log('CONFIG loaded:', !!CONFIG);
+    console.log('API_BASE_URL from CONFIG:', CONFIG.API_BASE_URL);
+    
+    const apiUrl = `${CONFIG.API_BASE_URL}/auth/login`;
+    console.log('Target API Endpoint:', apiUrl);
+    console.log('Request Body:', { admission_no: admissionNo, password: '[REDACTED]' });
 
     try {
+      console.log('Fetching from:', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ admission_no: admissionNo, password })
       });
 
-      console.log('Auth Response Status:', response.status);
+      console.log('Auth Response Status:', response.status, response.statusText);
       const data = await response.json();
       console.log('Auth Response Data:', data);
 
       if (response.ok && data.success) {
+        console.log('✅ Login successful! Redirecting...');
         // Save token and user info
         localStorage.setItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN, data.token);
         localStorage.setItem(CONFIG.STORAGE_KEYS.STUDENT_USER,  JSON.stringify(data.user));
@@ -448,13 +459,16 @@
         // Redirect to dashboard
         window.location.href = CONFIG.ROUTES.STUDENT_DASHBOARD;
       } else {
+        console.warn('❌ Login failed:', data.message);
         showError(data.message || 'Login failed. Please try again.');
         btn.classList.remove('loading');
         btn.disabled = false;
       }
 
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('❌ Login Error (Network/Parse):', err);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
       showError(CONFIG.ERRORS.CONNECTION_FAILED);
       btn.classList.remove('loading');
       btn.disabled = false;

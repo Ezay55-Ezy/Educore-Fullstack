@@ -1,10 +1,28 @@
 /**
  * EduCore Frontend Configuration
- * Centralized settings - update API_BASE_URL for your deployment
+ * Dynamically loads config from environment and backend
  */
+
+// Detect if we're in development mode
+const isDevelopment = typeof import !== 'undefined' && import.meta?.env?.VITE_API_URL;
+
+// Get API URL from environment variables (Vite) or use default
+const getApiUrl = () => {
+  // In Vite dev mode
+  if (typeof import !== 'undefined' && import.meta?.env?.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Fallback for static server
+  if (typeof process !== 'undefined' && process.env?.VITE_API_URL) {
+    return process.env.VITE_API_URL;
+  }
+  // Default to local backend
+  return 'http://localhost:5000/api';
+};
+
 const CONFIG = {
-  // API Configuration - Local Development
-  API_BASE_URL: process.env.VITE_API_URL || 'http://localhost:5000/api',
+  // API Configuration - dynamically determined
+  API_BASE_URL: getApiUrl(),
   
   // App Information
   APP_NAME: 'EduCore',

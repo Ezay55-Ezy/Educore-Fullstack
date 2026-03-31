@@ -385,6 +385,21 @@
 
 <script src="config.js"></script>
 <script>
+  // CONFIG declaration moved to top to prevent ReferenceError
+  const CONFIG = window.CONFIG || {
+    API_BASE_URL: 'http://localhost:5000/api',
+    STORAGE_KEYS: {
+      STUDENT_TOKEN: 'educore_token',
+      STUDENT_USER: 'educore_user'
+    },
+    ROUTES: {
+      STUDENT_DASHBOARD: 'dashboard.html'
+    },
+    ERRORS: {
+      CONNECTION_FAILED: 'Cannot connect to server. Please check your internet connection and try again.'
+    }
+  };
+
   // API URL is now dynamically loaded from config.js
   console.log('Login page loaded. API URL:', CONFIG.API_BASE_URL);
 

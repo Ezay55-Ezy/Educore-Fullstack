@@ -30,6 +30,7 @@ pool.connect((err, client, release) => {
     if (err.code === '28P01') {
       console.error('💡 TIP: Invalid password or incorrect pooler username format (should be user.project-ref).');
     }
+    process.exit(1); // Exit on connection failure
   } else {
     console.log('✅ Connected to Supabase PostgreSQL successfully!');
     release();

@@ -434,7 +434,7 @@
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         // Save token and user info
         localStorage.setItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN, data.token);
         localStorage.setItem(CONFIG.STORAGE_KEYS.STUDENT_USER,  JSON.stringify(data.user));

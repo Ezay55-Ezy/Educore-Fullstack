@@ -563,73 +563,24 @@
     ];
     
     // Sample timetable data (would come from API)
-    var timetableData = {
-      1: [ // Monday
-        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
-        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
-        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
-        null, // Break
-        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
-        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
-        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
-        null, // Lunch
-        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
-        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
-        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' }
-      ],
-      2: [ // Tuesday
-        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
-        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
-        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
-        null,
-        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
-        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
-        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
-        null,
-        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
-        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
-        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' }
-      ],
-      3: [ // Wednesday
-        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
-        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
-        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
-        null,
-        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
-        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
-        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' },
-        null,
-        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
-        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
-        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' }
-      ],
-      4: [ // Thursday
-        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
-        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
-        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
-        null,
-        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
-        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
-        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
-        null,
-        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
-        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' },
-        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' }
-      ],
-      5: [ // Friday
-        { subject: 'Kiswahili', teacher: 'Mr. Mwangi', room: 'Room 103', type: 'kiswahili' },
-        { subject: 'History', teacher: 'Ms. Njeri', room: 'Room 104', type: 'history' },
-        { subject: 'Biology', teacher: 'Mrs. Chebet', room: 'Lab 3', type: 'biology' },
-        null,
-        { subject: 'Geography', teacher: 'Mr. Otieno', room: 'Room 105', type: 'geography' },
-        { subject: 'Mathematics', teacher: 'Mr. Ochieng', room: 'Room 101', type: 'math' },
-        { subject: 'English', teacher: 'Ms. Wanjiku', room: 'Room 102', type: 'english' },
-        null,
-        { subject: 'Physics', teacher: 'Mr. Kamau', room: 'Lab 1', type: 'physics' },
-        { subject: 'Chemistry', teacher: 'Mrs. Akinyi', room: 'Lab 2', type: 'chemistry' },
-        { subject: 'CRE', teacher: 'Rev. Mutua', room: 'Room 106', type: 'cre' }
-      ]
-    };
+    var timetableData = {};
+    
+    async function loadTimetable() {
+      try {
+        const response = await fetch(`${API}/timetable`, {
+          headers: authHeaders()
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            timetableData = data.timetable; // Assume API returns {1: [...], 2: [...]}
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load timetable:', error);
+        // Keep empty or show error
+      }
+    }
     
     function detectRole() {
       if (localStorage.getItem(CONFIG.STORAGE_KEYS.TEACHER_TOKEN)) {
@@ -647,11 +598,14 @@
       return true;
     }
     
-    function init() {
+    async function init() {
       if (!detectRole()) return;
       
       document.getElementById('className').textContent = user.class || user.className || 'Form 4 East';
       document.getElementById('termInfo').textContent = 'Term 1, ' + new Date().getFullYear();
+      
+      // Load timetable from API
+      await loadTimetable();
       
       // Highlight today
       var today = new Date().getDay();

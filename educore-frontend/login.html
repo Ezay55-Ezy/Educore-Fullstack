@@ -425,14 +425,20 @@
     btn.classList.add('loading');
     btn.disabled = true;
 
+    console.log('EduCore: Login Started');
+    const apiUrl = `${API}/auth/login`;
+    console.log('Target API:', apiUrl);
+
     try {
-      const response = await fetch(`${API}/auth/login`, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ admission_no: admissionNo, password })
       });
 
+      console.log('Auth Response Status:', response.status);
       const data = await response.json();
+      console.log('Auth Response Data:', data);
 
       if (response.ok && data.success) {
         // Save token and user info
@@ -448,6 +454,7 @@
       }
 
     } catch (err) {
+      console.error('Login error:', err);
       showError(CONFIG.ERRORS.CONNECTION_FAILED);
       btn.classList.remove('loading');
       btn.disabled = false;

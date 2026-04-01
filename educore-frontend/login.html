@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduCore — Student Login</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+  const API_BASE_URL = '%VITE_API_URL%' || 'http://localhost:5000';
+  const STORAGE_KEYS = {
+    STUDENT_TOKEN: 'educore_token',
+    STUDENT_USER: 'educore_user'
+  };
+  const ROUTES = {
+    STUDENT_DASHBOARD: 'dashboard.html'
+  };
+  const ERRORS = {
+    CONNECTION_FAILED: 'Connection failed. Please check your internet and try again.'
+  };
+</script>
 <style>
   :root {
     --bg: #060910;
@@ -400,8 +413,7 @@
     }
   };
 
-  // API URL is now dynamically loaded from config.js
-  console.log('Login page loaded. API URL:', CONFIG.API_BASE_URL);
+  console.log('Login page loaded. API URL:', API_BASE_URL);
 
   function togglePassword() {
     const input = document.getElementById('password');
@@ -445,11 +457,10 @@
     console.log('EduCore: Login Started');
     console.log('Admission No:', admissionNo);
     
-    // Debug: Check CONFIG is available
-    console.log('CONFIG loaded:', !!CONFIG);
-    console.log('API_BASE_URL from CONFIG:', CONFIG.API_BASE_URL);
+    // Debug: Check API_BASE_URL is available
+    console.log('API_BASE_URL:', API_BASE_URL);
     
-    const apiUrl = `${CONFIG.API_BASE_URL}/auth/login`;
+    const apiUrl = `${API_BASE_URL}/api/auth/login`;
     console.log('Target API Endpoint:', apiUrl);
     console.log('Request Body:', { admission_no: admissionNo, password: '[REDACTED]' });
 
@@ -468,11 +479,11 @@
       if (response.ok && data.success) {
         console.log('✅ Login successful! Redirecting...');
         // Save token and user info
-        localStorage.setItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN, data.token);
-        localStorage.setItem(CONFIG.STORAGE_KEYS.STUDENT_USER,  JSON.stringify(data.user));
+        localStorage.setItem(STORAGE_KEYS.STUDENT_TOKEN, data.token);
+        localStorage.setItem(STORAGE_KEYS.STUDENT_USER,  JSON.stringify(data.user));
 
         // Redirect to dashboard
-        window.location.href = CONFIG.ROUTES.STUDENT_DASHBOARD;
+        window.location.href = ROUTES.STUDENT_DASHBOARD;
       } else {
         console.warn('❌ Login failed:', data.message);
         showError(data.message || 'Login failed. Please try again.');
@@ -484,15 +495,15 @@
       console.error('❌ Login Error (Network/Parse):', err);
       console.error('Error message:', err.message);
       console.error('Error stack:', err.stack);
-      showError(CONFIG.ERRORS.CONNECTION_FAILED);
+      showError(ERRORS.CONNECTION_FAILED);
       btn.classList.remove('loading');
       btn.disabled = false;
     }
   }
 
   // If already logged in, go straight to dashboard
-  if (localStorage.getItem(CONFIG.STORAGE_KEYS.STUDENT_TOKEN)) {
-    window.location.href = CONFIG.ROUTES.STUDENT_DASHBOARD;
+  if (localStorage.getItem(STORAGE_KEYS.STUDENT_TOKEN)) {
+    window.location.href = ROUTES.STUDENT_DASHBOARD;
   }
 </script>
 </body>
